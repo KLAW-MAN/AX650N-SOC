@@ -1,0 +1,109 @@
+{
+    "//": "eight_sensor",
+    "scenario_2":
+    [
+        {
+            "sns_id": 0,
+            "pipe_id": 0,
+            "dev_id": 0,
+            "rx_dev": 0,
+            "clk_id": 0,
+            "dev_node": 1,
+            "i2c_addr": 54,
+            "sns_mirror_flip": 0,
+            "stitch_mirror_flip": 0,
+            "//": "2: AX_SNS_SYNC_MASTER; 3: AX_SNS_SYNC_SLAVE",
+            "master_slave_select": 2,
+            "setting_index": [-1, 35, 35],
+            "//": "priority range: [0, 15]",
+            "pipe_sched_priority": 1,
+            "//": "policy: 0 for fifo, 1 for balance",
+            "pipe_sched_policy": 0,
+            "tuning_bin":["/opt/etc/os04a10_sdr_ai3d-t2d_to_t3dnr_30fps_isp2_eight_pipe0.bin"]
+        },
+        {
+            "sns_id": 1,
+            "pipe_id": 1,
+            "dev_id": 1,
+            "rx_dev": 1,
+            "clk_id": 0,
+            "dev_node": 1,
+            "i2c_addr": 16,
+            "sns_mirror_flip": 0,
+            "stitch_mirror_flip": 1,
+            "tuning_bin":["/opt/etc/os04a10_sdr_ai3d-t2d_to_t3dnr_30fps_isp2_eight_pipe1.bin"]
+        },
+        {
+            "sns_id": 2,
+            "pipe_id": 2,
+            "dev_id": 3,
+            "rx_dev": 3,
+            "clk_id": 1,
+            "dev_node": 2,
+            "i2c_addr": 16,
+            "sns_mirror_flip": 0,
+            "stitch_mirror_flip": 0,
+            "tuning_bin":["/opt/etc/os04a10_sdr_ai3d-t2d_to_t3dnr_30fps_isp2_eight_pipe2.bin"]
+        },
+        {
+            "sns_id": 3,
+            "pipe_id": 3,
+            "dev_id": 4,
+            "rx_dev": 5,
+            "clk_id": 2,
+            "dev_node": 3,
+            "i2c_addr": 54,
+            "sns_mirror_flip": 0,
+            "stitch_mirror_flip": 1,
+            "tuning_bin":["/opt/etc/os04a10_sdr_ai3d-t2d_to_t3dnr_30fps_isp2_eight_pipe3.bin"]
+        },
+        {
+            "sns_id": 4,
+            "pipe_id": 4,
+            "dev_id": 6,
+            "rx_dev": 7,
+            "clk_id": 3,
+            "dev_node": 9,
+            "i2c_addr": 54,
+            "sns_mirror_flip": 0,
+            "stitch_mirror_flip": 0,
+            "tuning_bin":["/opt/etc/os04a10_sdr_ai3d-t2d_to_t3dnr_30fps_isp2_eight_pipe4.bin"]
+        },
+        {
+            "sns_id": 5,
+            "pipe_id": 5,
+            "dev_id": 7,
+            "rx_dev": 6,
+            "clk_id": 3,
+            "dev_node": 9,
+            "i2c_addr": 16,
+            "sns_mirror_flip": 0,
+            "stitch_mirror_flip": 1,
+            "tuning_bin":["/opt/etc/os04a10_sdr_ai3d-t2d_to_t3dnr_30fps_isp2_eight_pipe5.bin"]
+        },
+        {
+            "sns_id": 6,
+            "pipe_id": 6,
+            "dev_id": 5,
+            "rx_dev": 4,
+            "clk_id": 2,
+            "dev_node": 3,
+            "i2c_addr": 16,
+            "sns_mirror_flip": 0,
+            "stitch_mirror_flip": 0,
+            "tuning_bin":["/opt/etc/os04a10_sdr_ai3d-t2d_to_t3dnr_30fps_isp2_eight_pipe6.bin"]
+        },
+        {
+            "sns_id": 7,
+            "pipe_id": 7,
+            "dev_id": 2,
+            "rx_dev": 2,
+            "clk_id": 1,
+            "dev_node": 2,
+            "i2c_addr": 54,
+            "sns_mirror_flip": 0,
+            "stitch_mirror_flip": 1,
+            "tuning_bin":["/opt/etc/os04a10_sdr_ai3d-t2d_to_t3dnr_30fps_isp2_eight_pipe7.bin"]
+        }
+    ]
+}

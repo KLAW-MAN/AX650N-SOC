@@ -1,0 +1,21 @@
+{
+	"partition0":	{
+		"ori_crop_start":	0,
+		"ori_crop_length":	914,
+		"output_length":	1720,
+		"output_crop_on_left":	0,
+		"output_crop_on_right":	0,
+		"output_right_end":	913,
+		"scale":	0.53125
+	},
+	"partition1":	{
+		"ori_crop_start":	908,
+		"ori_crop_length":	1012,
+		"output_length":	1902,
+		"output_crop_on_left":	10,
+		"output_crop_on_right":	0,
+		"output_right_end":	1918,
+		"scale":	0.53125
+	},
+	"ori_pad_num_end":	0
+}

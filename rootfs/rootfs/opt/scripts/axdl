@@ -1,0 +1,30 @@
+#!/bin/sh
+SLAVE_IMAGE_PATH=/opt/slave
+
+targetid=$1
+src_addr=0x100000000
+size=0x20000000
+
+if [ ! -n "$targetid" ]; then
+    for targetid in `lspci -nD|grep "1f4b"|awk -F ":" '{print$2}'`
+    do
+        targetid=`expr $targetid + 0`
+        sample_pcie_boot -t $targetid -r
+        sample_pcie_boot -t $targetid -n $SLAVE_IMAGE_PATH/u-boot.bin -d 0x14001000
+        sample_pcie_boot -t $targetid -b $src_addr -z $size -p
+        sample_pcie_boot -t $targetid -n $SLAVE_IMAGE_PATH/atf_bl31.img -d 0x11ff10000
+        sample_pcie_boot -t $targetid -n $SLAVE_IMAGE_PATH/AX650_slave.dtb -d 0x110080000
+        sample_pcie_boot -t $targetid -n $SLAVE_IMAGE_PATH/Image -d 0x100200000
+        sample_pcie_boot -t $targetid -n $SLAVE_IMAGE_PATH/rootfs.ext4 -d 0x140000000
+        sample_pcie_boot -t $targetid -s
+    done
+else
+    sample_pcie_boot -t $targetid -r
+    sample_pcie_boot -t $targetid -n $SLAVE_IMAGE_PATH/u-boot.bin -d 0x14001000
+    sample_pcie_boot -t $targetid -b $src_addr -z $size -p
+    sample_pcie_boot -t $targetid -n $SLAVE_IMAGE_PATH/atf_bl31.img -d 0x11ff10000
+    sample_pcie_boot -t $targetid -n $SLAVE_IMAGE_PATH/AX650_slave.dtb -d 0x110080000
+    sample_pcie_boot -t $targetid -n $SLAVE_IMAGE_PATH/Image -d 0x100200000
+    sample_pcie_boot -t $targetid -n $SLAVE_IMAGE_PATH/rootfs.ext4 -d 0x140000000
+    sample_pcie_boot -t $targetid -s
+fi

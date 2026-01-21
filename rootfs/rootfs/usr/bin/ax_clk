@@ -1,0 +1,350 @@
+#!/usr/bin/bash
+
+function usage() {
+	echo "query clk of all modules: ax_clk"
+	echo "query clk of all modules: ax_clk -g"
+	echo "query clk of specified module: ax_clk -g <module>"
+	echo "set clk of specified group[0-1]: ax_clk -s <groupX>"
+	echo "set clk of specified module: ax_clk -s <module> <clk>"
+}
+
+MOD_CLK_SET_OPTIONS=(
+	#                      option0      option1
+	"DDR                   4266         4266"
+	"VENC                  624000000    400000000"
+	"TDP,VPP,ITP           700000000    250000000"
+	"IFE,DPU_LITE          624000000    400000000"
+	"JENC,DPU0,DPU1,JDEC   624000000    400000000"
+	"VGP,GDC               700000000    400000000"
+	"VDEC                  624000000    624000000"
+	"VDSP                  800000000    624000000"
+	"NPU                   800000000    800000000"
+	"ACLK_TOP_NN           1600000000   1248000000"
+	"ACLK_TOP              800000000    624000000"
+	"ACLK_TOP1             800000000    624000000"
+	"ACLK_TOP2             800000000    624000000"
+	"ACLK_TOP3             800000000    624000000"
+)
+
+MOD_CLK_DISP_LIST=(
+	#MODULE
+	"DDR"
+	"TDP"
+	"GDC"
+	"VPP"
+	"VGP"
+	"DPU0"
+	"DPU1"
+	"DPU_LITE"
+	"VENC"
+	"JENC"
+	"VDEC"
+	"JDEC"
+	"IFE"
+	"ITP"
+	"NPU"
+	"VDSP"
+	"ACLK_TOP_NN"
+	"ACLK_TOP"
+	"ACLK_TOP1"
+	"ACLK_TOP2"
+	"ACLK_TOP3"
+)
+
+declare -A MOD_CLK_INFO
+
+MOD_CLK_INFO=(
+	#              reg_add    bs be chk path
+	[DDR]="        0x800006c   2  3  1  /sys/devices/platform/soc/soc:ddr_dfs/devfreq/soc:ddr_dfs                 4266 3200 2133"
+
+	[VENC]="       0x1A001000  0  1  1  /sys/devices/platform/soc/1a000000.venc/devfreq/1a000000.venc             400000000 500000000 624000000"
+
+	[TDP]="        0x12801000  5  6  1  /sys/devices/platform/soc/1209c000.tdp/devfreq/1209c000.tdp               250000000 500000000 624000000 700000000"
+	[VPP]="        0x12801000  5  6  1  /sys/devices/platform/soc/120d4000.vpp/devfreq/120d4000.vpp               250000000 500000000 624000000 700000000"
+	[ITP]="        0x12801000  5  6  1  /sys/devices/platform/soc/soc:isp_itp/devfreq/soc:isp_itp                 250000000 500000000 624000000 700000000"
+
+	[IFE]="        0x12801000  7  8  1  /sys/devices/platform/soc/soc:isp_ife/devfreq/soc:isp_ife                 250000000 400000000 500000000 624000000"
+	[DPU_LITE]="   0x12801000  7  8  1  /sys/devices/platform/soc/12006000.vo/devfreq/12006000.vo                 250000000 400000000 500000000 624000000"
+
+	[JENC]="       0x10010000  0  1  1  /sys/devices/platform/soc/10130000.jenc/devfreq/10130000.jenc             400000000 500000000 624000000"
+	[DPU0]="       0x10010000  0  1  1  /sys/devices/platform/soc/10111000.vo/devfreq/10111000.vo                 400000000 500000000 624000000"
+	[DPU1]="       0x10010000  0  1  1  /sys/devices/platform/soc/10112000.vo/devfreq/10112000.vo                 400000000 500000000 624000000"
+	[JDEC]="       0x10010000  0  1  1  /sys/devices/platform/soc/10120000.jdec/devfreq/10120000.jdec             400000000 500000000 624000000"
+
+	[VGP]="        0x10010000  2  3  1  /sys/devices/platform/soc/10103000.vgp/devfreq/10103000.vgp               400000000 500000000 624000000 700000000"
+	[GDC]="        0x10010000  2  3  1  /sys/devices/platform/soc/10107000.gdc/devfreq/10107000.gdc               400000000 500000000 624000000 700000000"
+
+	[VDEC]="       0x19001000  0  1  1  /sys/devices/platform/soc/19000000.vdec/devfreq/19000000.vdec             400000000 500000000 624000000"
+
+	[VDSP]="       0x18000004  0  2  0  /sys/devices/platform/soc/18000000.vdsp/devfreq/18000000.vdsp             24000000 624000000 700000000 750000000 800000000"
+
+	[NPU]="        0x16550000  6  8  1  /sys/devices/platform/soc/16400000.ax_npu/devfreq/16400000.ax_npu         266666666 416000000 466666666 500000000 800000000"
+
+	[ACLK_TOP_NN]="0x4210000   0  2  1  /sys/devices/platform/soc/4210000.aclk_top_nn/devfreq/4210000.aclk_top_nn 24000000 1248000000 1400000000 1500000000 1600000000"
+	[ACLK_TOP]="   0x4210000   3  5  1  /sys/devices/platform/soc/soc:aclk_top/devfreq/soc:aclk_top               24000000 624000000 700000000 750000000 800000000"
+	[ACLK_TOP1]="  0x4210004  21 23  1  /sys/devices/platform/soc/soc:aclk_top1/devfreq/soc:aclk_top1             24000000 624000000 700000000 750000000 800000000"
+	[ACLK_TOP2]="  0x4210004  18 20  1  /sys/devices/platform/soc/soc:aclk_top2/devfreq/soc:aclk_top2             24000000 624000000 700000000 750000000 800000000"
+	[ACLK_TOP3]="  0x4210004  15 17  1  /sys/devices/platform/soc/soc:aclk_top3/devfreq/soc:aclk_top3             24000000 624000000 700000000 750000000 800000000"
+)
+
+REG_ADDR_IND=0
+REG_BIT_START_IND=1
+REG_BIT_END_IND=2
+WHETHER_CHECK_IND=3
+PATH_IND=4
+REG_VALUE_LIST_IND=5
+
+# ----------------------------------
+# /available_frequencies
+# /cur_freq
+# /userspace/set_freq
+# ----------------------------------
+
+DDR_S1="4266 3200 2133"
+DDR_S2="3733 1866"
+DDR_S3="3200 2133"
+#DDR_TARGET_FREQ=`cat /sys/devices/platform/soc/soc:ddr_dfs/devfreq/soc:ddr_dfs/target_freq`
+
+function get_available_frequencies() {
+	clk_path=$1/available_frequencies
+	cat $clk_path
+}
+
+function get_cur_freq() {
+	clk_path=$1/cur_freq
+	if [ -f $clk_path ];then
+		cat $clk_path
+	else
+		echo -
+	fi
+}
+
+# DDR
+# VDSP
+function get_cur_freq_from_target() {
+	clk_path=$1/target_freq
+	if [ -f $clk_path ];then
+		cat $clk_path
+	else
+		echo -
+	fi
+}
+
+function set_freq() {
+	clk_path=$1/userspace/set_freq
+	if [ -f $clk_path ];then
+		echo $2 > $clk_path
+	else
+		echo $clk_path is not exist
+	fi
+}
+
+function get_arr_item_ind(){
+	local arr=($1)
+	local item=$2
+	local index=0
+	for i in ${arr[*]}
+	do
+	if [[ $item == $i ]]
+		then
+		echo $index
+		return
+	fi
+	index=$(( $index + 1 ))
+	done
+}
+
+function check_freq_reg() {
+	local reg_addr=$1
+	local bit_start=$2
+	local bit_end=$3
+	local whether_check=$4
+	local target=$5
+
+#whether check set freq result
+	if [ $whether_check == '0' ]; then
+		echo OK
+		return
+	fi
+#
+#12801000,1
+#0x12801000:  00000044
+#
+	regv=`ax_lookat $reg_addr | grep :`
+	# echo $regv
+	regv=0x${regv:13:8}
+	regv=$((regv))
+	value=0
+	for i in `seq $bit_start $bit_end`
+	do
+		mask=$(( 0x1 << $i ))
+		bitv=$(( $regv & $mask ))
+		bitv=$(( $bitv >> ${bit_start} ))
+		value=$(( $value | $bitv ))
+	done
+
+	# echo regv:$regv value:$value target:$target
+	if [ $value == $target ]; then
+		echo OK
+	else
+		echo Failed
+	fi
+}
+
+function list_specified_clk() {
+	mod=$(echo $1 | tr '[a-z]' '[A-Z]')
+	for k in `seq 0 ${#MOD_CLK_DISP_LIST[@]}`
+	do
+		option=(${MOD_CLK_DISP_LIST[$k]})
+		mods=${option[0]}
+		mods=(${mods//,/ })
+		if [[ "${mods[@]}" =~ "${mod}" ]]; then
+			echo "Current Clk Freq:"
+			printf '%-12s\t%s\n'  "MOD" "FREQ"
+			echo "-----------------------------------------------"
+			mod_info=(${MOD_CLK_INFO[$mod]})
+			if [ "$mod" == "DDR" ] || [ "$mod" == "VDSP" ]; then
+				clk=`get_cur_freq_from_target ${mod_info[$PATH_IND]}`
+			else
+				clk=`get_cur_freq  ${mod_info[$PATH_IND]}`
+			fi
+			printf '%-12s\t%s\n'  $1 "$clk"
+			echo "-----------------------------------------------"
+			return 0
+		fi
+	done
+	echo "[$1] not exist"
+	return 1
+}
+
+function list_all_clk() {
+	echo -e "\nCurrent Clk Freqs:"
+	printf '%-12s\t%s\n'  "MOD" "FREQ"
+	echo "-----------------------------------------------"
+	for k in `seq 0 ${#MOD_CLK_DISP_LIST[@]}`
+	do
+		option=(${MOD_CLK_DISP_LIST[$k]})
+		mods=${option[0]}
+		mods=(${mods//,/ })
+		for mod in ${mods[*]}
+		do
+			mod_info=(${MOD_CLK_INFO[$mod]})
+			if [ "$mod" == "DDR" ] || [ "$mod" == "VDSP" ]; then
+				clk=`get_cur_freq_from_target ${mod_info[$PATH_IND]}`
+			else
+				clk=`get_cur_freq  ${mod_info[$PATH_IND]}`
+			fi
+			printf '%-12s\t%s\n'  $mod "$clk"
+		done
+	done
+	echo "-----------------------------------------------"
+	echo -e "\n"
+}
+
+function set_specified_clk() {
+	mod=$(echo $1 | tr '[a-z]' '[A-Z]')
+	value=$2
+	for k in `seq 0 ${#MOD_CLK_SET_OPTIONS[@]}`
+	do
+		option=(${MOD_CLK_SET_OPTIONS[$k]})
+		mods=${option[0]}
+		mods=(${mods//,/ })
+		if [[ "${mods[@]}" =~ "${mod}" ]]; then
+			mod_info=(${MOD_CLK_INFO[$mod]})
+			value_arr=${mod_info[@]:$REG_VALUE_LIST_IND:10}
+			regv=`get_arr_item_ind "${value_arr[@]}" $value`
+
+			if [ ! $regv ]; then
+				echo Invalid clk[$value] for [$1]
+				return 1
+			fi
+
+			echo "set and check [$1] freq:"
+			# echo ${mod_info[$PATH_IND]} $value
+			set_freq ${mod_info[$PATH_IND]} $value
+
+			state=`check_freq_reg ${mod_info[$REG_ADDR_IND]} ${mod_info[$REG_BIT_START_IND]} ${mod_info[$REG_BIT_END_IND]} ${mod_info[$WHETHER_CHECK_IND]} $regv`
+
+			printf 'set %-12s\t%-12s\t%s\n'  "$mod" "$value" "$state"
+			echo "-----------------------------------------------"
+			return 0
+		fi
+	done
+	echo "[$1] not exist"
+	return 1
+}
+
+function set_all_clk() {
+	echo "set and check freqs from group[$1]:"
+	echo "-----------------------------------------------"
+	for k in `seq 0 ${#MOD_CLK_SET_OPTIONS[@]}`
+	do
+		option=(${MOD_CLK_SET_OPTIONS[$k]})
+		mods=${option[0]}
+
+		options=(${option[@]:1:100})
+		value=${options[$1]}
+		mods=(${mods//,/ })
+		for mod in ${mods[*]}
+		do
+			mod_info=(${MOD_CLK_INFO[$mod]})
+			value_arr=${mod_info[@]:$REG_VALUE_LIST_IND:10}
+			regv=`get_arr_item_ind "${value_arr[@]}" $value`
+
+			if [ $regv ]; then
+				# echo ${mod_info[$PATH_IND]} $value
+				set_freq ${mod_info[$PATH_IND]} $value
+
+				state=`check_freq_reg ${mod_info[$REG_ADDR_IND]} ${mod_info[$REG_BIT_START_IND]} ${mod_info[$REG_BIT_END_IND]} ${mod_info[$WHETHER_CHECK_IND]} $regv`
+
+				printf 'set %-12s\t%-12s\t%s\n'  "$mod" "$value" "$state"
+			else
+				printf 'set %-12s\t%-12s\t%s\n'  "$mod" "$value" "Invalid"
+			fi
+		done
+	done
+}
+
+if [ $# -eq 0 ]; then
+	list_all_clk
+elif [ $# -eq 1 ]; then
+	if [ $1 == '-g' ]; then
+		list_all_clk
+	else
+		usage
+		exit
+	fi
+elif [ $# -eq 2 ]; then
+	if [ $1 == '-g' ]; then
+		list_specified_clk $2
+	elif [ $1 == '-s' ]; then
+		option=(${MOD_CLK_SET_OPTIONS[0]})
+		options=(${option[@]:1:100})
+		if [[ ! "${2}" =~ ^[0-9]+$ ]] || [ ${2} -lt 0 ] || [ ${2} -ge ${#options[@]} ]; then
+			echo "ax_clk -s <group>: invalid group"
+			exit
+		fi
+		list_all_clk
+		set_all_clk $2
+		list_all_clk
+	else
+		usage
+		exit
+	fi
+elif [ $# -eq 3 ]; then
+	if [ $1 == '-s' ]; then
+		list_specified_clk $2
+		if [ $? == 0 ]; then
+			set_specified_clk $2 $3
+			if [ $? == 0 ]; then
+				list_specified_clk $2
+			fi
+		fi
+	else
+		usage
+		exit
+	fi
+else
+	usage
+	exit
+fi

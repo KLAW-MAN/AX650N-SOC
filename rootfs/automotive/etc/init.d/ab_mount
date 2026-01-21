@@ -1,0 +1,16 @@
+#!/bin/sh
+
+root_part=`dmesg | grep "Kernel command line" | sed "s/ /\\n/g" | grep "root=" | awk -F "/" '{ print $3 }'`
+
+if [ "$root_part" = "mmcblk0p14" ]; then
+# select part A
+	param_part="mmcblk0p4"
+	soc_part="mmcblk0p16"
+else
+# select part B
+	param_part="mmcblk0p5"
+	soc_part="mmcblk0p17"
+fi
+
+mount -t ext4 -o noatime,nodiratime /dev/$soc_part /soc
+mount -t ext4 -o noatime,nodiratime,discard /dev/$param_part /param

@@ -1,0 +1,29 @@
+PATH="/bin:/sbin:/usr/bin:/usr/sbin:/opt/bin:/opt/scripts:/soc/bin:/soc/scripts:/usr/local/bin"
+LD_LIBRARY_PATH="/usr/local/lib:/usr/lib:/opt/lib:/soc/lib"
+export SSL_LDPATH=/usr/local/lib/
+export ZLIB_LDPATH=/usr/local/lib/
+export PATH
+export LD_LIBRARY_PATH
+ulimit -s 2048
+ulimit -c unlimited
+echo /opt/data/core-%e-%p-%t > /proc/sys/kernel/core_pattern
+if [ "$PS1" ]; then
+        if [ "`id -u`" -eq 0 ]; then
+                export PS1='$PWD # '
+        else
+                export PS1='$PWD $ '
+        fi
+fi
+
+export PAGER='/bin/more'
+export EDITOR='/bin/vi'
+
+# Source configuration files from /etc/profile.d
+for i in /etc/profile.d/*.sh ; do
+        if [ -r "$i" ]; then
+                . $i
+        fi
+done
+unset i
+stty -F /dev/console -ixon
+stty -F /dev/console -ixoff

@@ -1,0 +1,4573 @@
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/configure b/3rdparty/ffmpeg/FFmpeg-n7.1/configure
+index d77a55b6..113cda55 100755
+--- a/3rdparty/ffmpeg/FFmpeg-n7.1/configure
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/configure
+@@ -337,6 +337,7 @@ External library support:
+   --enable-vapoursynth     enable VapourSynth demuxer [no]
+   --disable-xlib           disable xlib [autodetect]
+   --disable-zlib           disable zlib [autodetect]
++  --enable-axmm            enable Axera multi-media hardware support [no]
+ 
+   The following libraries provide various hardware acceleration features:
+   --disable-amf            disable AMF video encoding code [autodetect]
+@@ -1984,6 +1985,7 @@ EXTERNAL_LIBRARY_LIST="
+     openssl
+     pocketsphinx
+     vapoursynth
++    axmm
+ "
+ 
+ HWACCEL_AUTODETECT_LIBRARY_LIST="
+@@ -3595,6 +3597,8 @@ vapoursynth_demuxer_deps="vapoursynth"
+ videotoolbox_suggest="coreservices"
+ videotoolbox_deps="corefoundation coremedia corevideo"
+ videotoolbox_encoder_deps="videotoolbox VTCompressionSessionPrepareToEncodeFrames"
++h264_ax_encoder_deps="axmm"
++h264_ax_decoder_deps="axmm"
+ 
+ # demuxers / muxers
+ ac3_demuxer_select="ac3_parser"
+@@ -5827,7 +5831,7 @@ case $target_os in
+         enabled x86_32 && check_ldflags -Wl,--large-address-aware
+         add_cppflags -DWIN32_LEAN_AND_MEAN
+         shlibdir_default="$bindir_default"
+-        SLIBPREF=""
++        SLIBPREF="lib"
+         SLIBSUF=".dll"
+         SLIBNAME_WITH_VERSION='$(SLIBPREF)$(FULLNAME)-$(LIBVERSION)$(SLIBSUF)'
+         SLIBNAME_WITH_MAJOR='$(SLIBPREF)$(FULLNAME)-$(LIBMAJOR)$(SLIBSUF)'
+@@ -6851,6 +6855,7 @@ for func in $MATH_FUNCS; do
+ done
+ 
+ # these are off by default, so fail if requested and not available
++enabled axmm
+ enabled avisynth          && { require_headers "avisynth/avisynth_c.h avisynth/avs/version.h" &&
+                                { test_cpp_condition avisynth/avs/version.h "AVS_MAJOR_VER >= 3 && AVS_MINOR_VER >= 7 && AVS_BUGFIX_VER >= 3 || AVS_MAJOR_VER >= 3 && AVS_MINOR_VER > 7 || AVS_MAJOR_VER > 3" ||
+                                  die "ERROR: AviSynth+ header version must be >= 3.7.3"; } }
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/ffbuild/common.mak b/3rdparty/ffmpeg/FFmpeg-n7.1/ffbuild/common.mak
+index 87a3ffd2..8354202c 100644
+--- a/3rdparty/ffmpeg/FFmpeg-n7.1/ffbuild/common.mak
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/ffbuild/common.mak
+@@ -1,6 +1,9 @@
+ #
+ # common bits used by all libraries
+ #
++MKFILE_PATH         := $(abspath $(lastword $(MAKEFILE_LIST)))
++AXCL_HOME_PATH      := $(abspath $(dir $(MKFILE_PATH))../../../..)
++AXCL_BUILD_PATH     := $(AXCL_HOME_PATH)/build
+ 
+ DEFAULT_X86ASMD=.dbg
+ 
+@@ -36,6 +39,7 @@ PREPEND = $(eval $(1) = $(patsubst %,$$(%), $(2)) $(value $(1)))
+ IFLAGS     := -I. -I$(SRC_LINK)/
+ CPPFLAGS   := $(IFLAGS) $(CPPFLAGS)
+ CFLAGS     += $(ECFLAGS)
++CFLAGS     += -DAXCL_SDK_VERSION=\"$(SDK_VERSION)\"
+ CCFLAGS     = $(CPPFLAGS) $(CFLAGS)
+ OBJCFLAGS  += $(EOBJCFLAGS)
+ OBJCCFLAGS  = $(CPPFLAGS) $(CFLAGS) $(OBJCFLAGS)
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/ffbuild/version.sh b/3rdparty/ffmpeg/FFmpeg-n7.1/ffbuild/version.sh
+index edc4dd33..76b54048 100755
+--- a/3rdparty/ffmpeg/FFmpeg-n7.1/ffbuild/version.sh
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/ffbuild/version.sh
+@@ -35,17 +35,17 @@ test "$revision" || revision=$(cd "$1" && cat RELEASE 2> /dev/null)
+ test "$revision" && test "$git_hash" && revision="$revision-$git_hash"
+ 
+ # releases extract the version number from the VERSION file
+-version=$(cd "$1" && cat VERSION 2> /dev/null)
+-test "$version" || version=$revision
++# version=$(cd "$1" && cat VERSION 2> /dev/null)
++# test "$version" || version=$revision
+ 
+-test -n "$3" && version=$version-$3
++# test -n "$3" && version=$version-$3
+ 
+-if [ -z "$2" ]; then
+-    echo "$version"
+-    exit
+-fi
++# if [ -z "$2" ]; then
++#    echo "$version"
++#    exit
++#fi
+ 
+-NEW_REVISION="#define FFMPEG_VERSION \"$version\""
++NEW_REVISION="#define FFMPEG_VERSION \"7.1\""
+ OLD_REVISION=$(cat "$2" 2> /dev/null | head -4 | tail -1)
+ 
+ # String used for preprocessor guard
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/Makefile b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/Makefile
+index a4fcce3b..c1b2d9b5 100644
+--- a/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/Makefile
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/Makefile
+@@ -1173,6 +1173,9 @@ OBJS-$(CONFIG_LIBXEVD_DECODER)            += libxevd.o
+ OBJS-$(CONFIG_LIBXEVE_ENCODER)            += libxeve.o
+ OBJS-$(CONFIG_LIBXVID_ENCODER)            += libxvid.o
+ OBJS-$(CONFIG_LIBZVBI_TELETEXT_DECODER)   += libzvbi-teletextdec.o ass.o
++OBJS-$(CONFIG_H264_AX_ENCODER)            += h264_axenc.o axvenc.o
++OBJS-$(CONFIG_HEVC_AX_ENCODER)            += hevc_axenc.o
++OBJS-$(CONFIG_H264_AX_DECODER)            += axvdec_h2645.o
+ 
+ # parsers
+ OBJS-$(CONFIG_AAC_LATM_PARSER)         += latm_parser.o
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/allcodecs.c b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/allcodecs.c
+index aa0fc476..0e929730 100644
+--- a/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/allcodecs.c
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/allcodecs.c
+@@ -416,6 +416,10 @@ extern const FFCodec ff_zlib_encoder;
+ extern const FFCodec ff_zlib_decoder;
+ extern const FFCodec ff_zmbv_encoder;
+ extern const FFCodec ff_zmbv_decoder;
++extern const FFCodec ff_hevc_ax_decoder;
++extern const FFCodec ff_h264_ax_decoder;
++extern const FFCodec ff_hevc_ax_encoder;
++extern const FFCodec ff_h264_ax_encoder;
+ 
+ /* audio codecs */
+ extern const FFCodec ff_aac_encoder;
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/axdec_h2645.h b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/axdec_h2645.h
+new file mode 100644
+index 00000000..19912b3f
+--- /dev/null
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/axdec_h2645.h
+@@ -0,0 +1,213 @@
++/*
++ * This file is part of FFmpeg.
++ *
++ * FFmpeg is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * FFmpeg is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with FFmpeg; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++ */
++
++#ifndef AVCODEC_AXVDEC_H
++#define AVCODEC_AXVDEC_H
++
++#if defined(WIN32)
++#include <windows.h>
++#endif
++
++#include "config.h"
++
++#include "libavutil/fifo.h"
++#include "libavutil/opt.h"
++#include "hwconfig.h"
++
++#include "avcodec.h"
++
++#include "axcl.h"
++
++#define VDEC_GRP_MAX         (164)
++#define AX_SHIFT_LEFT_ALIGN(a) (1 << (a))
++#define MAX(a, b) (((a) > (b)) ? (a) : (b))
++
++#define AX_VDEC_WIDTH_ALIGN     AX_SHIFT_LEFT_ALIGN(8)
++#define AX_JDEC_WIDTH_ALIGN     AX_SHIFT_LEFT_ALIGN(6)
++
++#define AX_VDEC_HEIGHT_ALIGN     AX_SHIFT_LEFT_ALIGN(6)
++
++#define STREAM_BUFFER_MIN_SIZE           (10 * 1024 * 1024)
++#define AX_VDEC_MAX_WIDTH           8192
++#define AX_VDEC_MAX_HEIGHT          8192
++
++#define AX_VDEC_DPB_NUM          16
++
++#define CHECK_WITH_RET(cond, ret) \
++    do { \
++        if ((cond) != 0) { \
++            av_log(NULL, AV_LOG_ERROR, "check %s failed\n", #cond); \
++            return (ret); \
++        } \
++    } while (0)
++
++#define AX_VDEC_ALIGN(value, n) (((value) + (n) - 1) & ~((n) - 1))
++
++typedef AX_S32 (*pFnAXCL_SYS_Init)(AX_VOID);
++typedef AX_S32 (*pFnAXCL_SYS_Deinit)(AX_VOID);
++
++typedef struct {
++    pFnAXCL_SYS_Init sys_init;
++    pFnAXCL_SYS_Deinit sys_deinit;
++} AXSYSDevFuncs;
++
++typedef axclError (*pFnaxclInit)(const char *);
++typedef axclError (*pFnaxclFinalize)(void);
++typedef axclError (*pFnaxclrtSetDevice)(int32_t);
++typedef axclError (*pFnaxclrtResetDevice)(int32_t);
++typedef axclError (*pFnaxclrtGetDeviceList)(axclrtDeviceList *);
++typedef axclError (*pFnaxclrtCreateContext)(axclrtContext *, int32_t);
++typedef axclError (*pFnaxclrtGetCurrentContext)(axclrtContext *);
++typedef axclError (*pFnaxclrtDestroyContext)(axclrtContext);
++typedef axclError (*pFnaxclrtMemcpy)(void *, const void *, size_t, axclrtMemcpyKind);
++
++typedef struct {
++    pFnaxclInit rt_init;
++    pFnaxclFinalize rt_finalize;
++    pFnaxclrtSetDevice rt_set_device;
++    pFnaxclrtResetDevice rt_reset_device;
++    pFnaxclrtGetDeviceList rt_get_device_list;
++    pFnaxclrtCreateContext rt_create_context;
++    pFnaxclrtGetCurrentContext rt_get_current_context;
++    pFnaxclrtDestroyContext rt_destroy_context;
++    pFnaxclrtMemcpy rt_memcpy;
++} AXRTDevFuncs;
++
++typedef AX_S32 (*pFnAXCL_VDEC_Init)(const AX_VDEC_MOD_ATTR_T *pstModAttr);
++typedef AX_S32 (*pFnAXCL_VDEC_Deinit)(AX_VOID);
++typedef AX_S32 (*pFnAXCL_VDEC_ExtractStreamHeaderInfo)(const AX_VDEC_STREAM_T *pstStreamBuf, AX_PAYLOAD_TYPE_E enVideoType, AX_VDEC_BITSTREAM_INFO_T *pstBitStreamInfo);
++typedef AX_S32 (*pFnAXCL_VDEC_CreateGrp)(AX_VDEC_GRP VdGrp, const AX_VDEC_GRP_ATTR_T *pstGrpAttr);
++typedef AX_S32 (*pFnAXCL_VDEC_CreateGrpEx)(AX_VDEC_GRP *VdGrp, const AX_VDEC_GRP_ATTR_T *pstGrpAttr);
++typedef AX_S32 (*pFnAXCL_VDEC_DestroyGrp)(AX_VDEC_GRP VdGrp);
++typedef AX_S32 (*pFnAXCL_VDEC_GetGrpAttr)(AX_VDEC_GRP VdGrp, AX_VDEC_GRP_ATTR_T *pstGrpAttr);
++typedef AX_S32 (*pFnAXCL_VDEC_SetGrpAttr)(AX_VDEC_GRP VdGrp, const AX_VDEC_GRP_ATTR_T *pstGrpAttr);
++typedef AX_S32 (*pFnAXCL_VDEC_StartRecvStream)(AX_VDEC_GRP VdGrp, const AX_VDEC_RECV_PIC_PARAM_T *pstRecvParam);
++typedef AX_S32 (*pFnAXCL_VDEC_StopRecvStream)(AX_VDEC_GRP VdGrp);
++typedef AX_S32 (*pFnAXCL_VDEC_QueryStatus)(AX_VDEC_GRP VdGrp, AX_VDEC_GRP_STATUS_T *pstGrpStatus);
++typedef AX_S32 (*pFnAXCL_VDEC_ResetGrp)(AX_VDEC_GRP VdGrp);
++typedef AX_S32 (*pFnAXCL_VDEC_SetGrpParam)(AX_VDEC_GRP VdGrp, const AX_VDEC_GRP_PARAM_T *pstGrpParam);
++typedef AX_S32 (*pFnAXCL_VDEC_GetGrpParam)(AX_VDEC_GRP VdGrp, AX_VDEC_GRP_PARAM_T *pstGrpParam);
++typedef AX_S32 (*pFnAXCL_VDEC_SelectGrp)(AX_VDEC_GRP_SET_INFO_T *pstGrpSet, AX_S32 s32MilliSec);
++typedef AX_S32 (*pFnAXCL_VDEC_SendStream)(AX_VDEC_GRP VdGrp, const AX_VDEC_STREAM_T *pstStream, AX_S32 s32MilliSec);
++typedef AX_S32 (*pFnAXCL_VDEC_GetChnFrame)(AX_VDEC_GRP VdGrp, AX_VDEC_CHN VdChn, AX_VIDEO_FRAME_INFO_T *pstFrameInfo, AX_S32 s32MilliSec);
++typedef AX_S32 (*pFnAXCL_VDEC_ReleaseChnFrame)(AX_VDEC_GRP VdGrp, AX_VDEC_CHN VdChn, const AX_VIDEO_FRAME_INFO_T *pstFrameInfo);
++typedef AX_S32 (*pFnAXCL_VDEC_GetUserData)(AX_VDEC_GRP VdGrp, AX_VDEC_USERDATA_T *pstUserData);
++typedef AX_S32 (*pFnAXCL_VDEC_ReleaseUserData)(AX_VDEC_GRP VdGrp, const AX_VDEC_USERDATA_T *pstUserData);
++typedef AX_S32 (*pFnAXCL_VDEC_SetUserPic)(AX_VDEC_GRP VdGrp, const AX_VDEC_USRPIC_T *pstUsrPic);
++typedef AX_S32 (*pFnAXCL_VDEC_EnableUserPic)(AX_VDEC_GRP VdGrp);
++typedef AX_S32 (*pFnAXCL_VDEC_DisableUserPic)(AX_VDEC_GRP VdGrp);
++typedef AX_S32 (*pFnAXCL_VDEC_SetDisplayMode)(AX_VDEC_GRP VdGrp, AX_VDEC_DISPLAY_MODE_E enDisplayMode);
++typedef AX_S32 (*pFnAXCL_VDEC_GetDisplayMode)(AX_VDEC_GRP VdGrp, AX_VDEC_DISPLAY_MODE_E *penDisplayMode);
++typedef AX_S32 (*pFnAXCL_VDEC_AttachPool)(AX_VDEC_GRP VdGrp, AX_VDEC_CHN VdChn, AX_POOL PoolId);
++typedef AX_S32 (*pFnAXCL_VDEC_DetachPool)(AX_VDEC_GRP VdGrp, AX_VDEC_CHN VdChn);
++typedef AX_S32 (*pFnAXCL_VDEC_EnableChn)(AX_VDEC_GRP VdGrp, AX_VDEC_CHN VdChn);
++typedef AX_S32 (*pFnAXCL_VDEC_DisableChn)(AX_VDEC_GRP VdGrp, AX_VDEC_CHN VdChn);
++typedef AX_S32 (*pFnAXCL_VDEC_SetChnAttr)(AX_VDEC_GRP VdGrp, AX_VDEC_CHN VdChn, const AX_VDEC_CHN_ATTR_T *pstVdChnAttr);
++typedef AX_S32 (*pFnAXCL_VDEC_GetChnAttr)(AX_VDEC_GRP VdGrp, AX_VDEC_CHN VdChn, AX_VDEC_CHN_ATTR_T *pstVdChnAttr);
++typedef AX_S32 (*pFnAXCL_VDEC_JpegDecodeOneFrame)(AX_VDEC_DEC_ONE_FRM_T *pstParam);
++typedef AX_S32 (*pFnAXCL_VDEC_GetStreamBufInfo)(AX_VDEC_GRP VdGrp, AX_VDEC_STREAM_BUF_INFO_T *pstStreamBufInfo);
++typedef AX_S32 (*pFnAXCL_VDEC_GetVuiParam)(AX_VDEC_GRP VdGrp, AX_VDEC_VUI_PARAM_T *pstVuiParam);
++
++typedef struct {
++    pFnAXCL_VDEC_Init vdec_init;
++    pFnAXCL_VDEC_Deinit vdec_deinit;
++    pFnAXCL_VDEC_CreateGrpEx vdec_creategrp;
++    pFnAXCL_VDEC_DestroyGrp vdec_destroygrp;
++    pFnAXCL_VDEC_SelectGrp vdec_selectgrp;
++    pFnAXCL_VDEC_SendStream vdec_sendstream;
++    pFnAXCL_VDEC_GetChnFrame vdec_getframe;
++    pFnAXCL_VDEC_ReleaseChnFrame vdec_releaseframe;
++    pFnAXCL_VDEC_StartRecvStream vdec_startrecvsStream;
++    pFnAXCL_VDEC_StopRecvStream vdec_stoprecvstream;
++    pFnAXCL_VDEC_QueryStatus vdec_querystatus;
++    pFnAXCL_VDEC_ExtractStreamHeaderInfo vdec_getstrminfo;
++    pFnAXCL_VDEC_SetGrpParam vdec_setgrpparam;
++    pFnAXCL_VDEC_SetDisplayMode vdec_setdispmode;
++    pFnAXCL_VDEC_AttachPool vdec_attachpool;
++    pFnAXCL_VDEC_DetachPool vdec_detachpool;
++    pFnAXCL_VDEC_EnableChn vdec_enablechn;
++    pFnAXCL_VDEC_DisableChn vdec_disablechn;
++    pFnAXCL_VDEC_SetChnAttr vdec_setchnattr;
++} AXVdecFuncs;
++
++typedef struct AXVdecContext {
++    AVClass *class;
++    AX_PAYLOAD_TYPE_E enCodecType;
++    AX_VDEC_GRP VdGrp;
++    AX_VDEC_CHN VdChn;
++    int devid;
++    char *resize_expr;
++
++    struct {
++        int width;
++        int height;
++    } resize;
++
++    char *device_index;
++    int index;
++
++    char *out_fmt_string;
++    enum AVPixelFormat format;
++
++    int bit_depth_luma;
++    int bit_depth_chroma;
++
++    AX_U32 u32StreamBufSize;
++    AX_VDEC_INPUT_MODE_E enInputMode;
++    AX_IMG_FORMAT_E enImgFormat;        /* Pixel format of target image */
++    AX_U32 u32PicWidth;                 /* Width of scaler or crop target image */
++    AX_U32 u32PicHeight;                /* Height of scaler or crop target image */
++    AX_U32 u32FrameStride;
++    AX_U32 u32FramePadding;
++    AX_U32 u32CropX;
++    AX_U32 u32CropY;
++    AX_U32 u32FrameBufCnt;      /* frame buffer number, valid if bSdkAutoFramePool is TRUE */
++    AX_U32 u32OutputFifoDepth;
++    AX_BOOL bEof;
++    AX_BOOL bInited;
++
++    AVBufferRef *hwdevice;
++    AVBufferRef *hwframe;
++
++    AVPacket buffer_pkt;
++
++#if defined(WIN32)
++    HMODULE sys_lib;
++#else
++    void *sys_lib;
++#endif
++    AXSYSDevFuncs sysdev_funcs;
++
++#if defined(WIN32)
++    HMODULE rt_lib;
++#else
++    void *rt_lib;
++#endif
++    AXRTDevFuncs rtdev_funcs;
++    axclrtContext context;
++
++#if defined(WIN32)
++    HMODULE mm_vdec_lib;
++#else
++    void *mm_vdec_lib;
++#endif
++    AXVdecFuncs vdec_funcs;
++} AXVdecContext;
++
++
++#endif /* AVCODEC_AXVDEC_H */
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/axvdec_h2645.c b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/axvdec_h2645.c
+new file mode 100644
+index 00000000..88069652
+--- /dev/null
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/axvdec_h2645.c
+@@ -0,0 +1,1271 @@
++/*
++ * Axera Semiconductor H.264 / HEVC decoder
++ *
++ * Copyright (c) 2019-2024 Axera Semiconductor Co., Ltd.
++ *
++ * This file is part of FFmpeg.
++ *
++ * FFmpeg is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * FFmpeg is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with FFmpeg; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++ */
++
++
++#include <stdint.h>
++#include <string.h>
++#include <unistd.h>
++
++#if defined(WIN32)
++#include <windows.h>
++#else
++#include <dlfcn.h>
++#endif
++
++#include "libavutil/opt.h"
++#include "libavutil/log.h"
++#include "libavutil/pixdesc.h"
++#include "libavutil/mem.h"
++
++#include "avcodec.h"
++#include "codec_internal.h"
++#include "decode.h"
++#include "hevc/parse.h"
++
++#include "h264_parse.h"
++
++#include "hwconfig.h"
++#include "internal.h"
++#include "libavutil/buffer.h"
++#include "libavutil/hwcontext_axmm.h"
++
++#include "axdec_h2645.h"
++
++#if defined(WIN32)
++#define LIB_VDEC_NAME    "libaxcl_vdec.dll"
++#define LIB_AXCL_NAME    "libaxcl_rt.dll"
++#define LIB_SYS_NAME     "libaxcl_sys.dll"
++
++#define SAFE_FREE_LIBRARY(h) if (h) { FreeLibrary(h); h = NULL; }
++#else
++#define LIB_VDEC_NAME    "libaxcl_vdec.so"
++#define LIB_AXCL_NAME    "libaxcl_rt.so"
++#define LIB_SYS_NAME     "libaxcl_sys.so"
++
++#define SAFE_FREE_LIBRARY(h) if (h) { dlclose(h); h = NULL; }
++#endif
++
++static __inline AX_U32 AX_VDEC_GetPicBufferSize(AX_U32 uWidth, AX_U32 uHeight, AX_IMG_FORMAT_E eOutputFormat,
++        AX_FRAME_COMPRESS_INFO_T *pstCompressInfo, AX_PAYLOAD_TYPE_E enType)
++{
++    AX_U32 picSizeInMbs = 0;
++    AX_U32 picSize = 0;
++    AX_U32 dmvMemSize = 0;
++    AX_U32 refBuffSize = 0;
++    AX_U32 uPixBits = 8;
++    AX_U32 uHeightAlign = 0;
++    AX_U32 uWidthAlign = 0;
++    AX_U32 uAlignSize = (1 << (8));
++    AX_U32 ax_fbc_tile128x2_size[AX_VDEC_FBC_COMPRESS_LEVEL_MAX] =
++    {0, 32, 64, 96, 128, 160, 192, 224, 256, 288};
++
++
++    // picSizeInMbs = (AX_COMM_ALIGN(uHeight, 16) >> 4) * (AX_COMM_ALIGN(uWidth, 16) >> 4);
++    if ((PT_H264 == enType) || (PT_H265 == enType)) {
++        switch (eOutputFormat) {
++        case AX_FORMAT_YUV400:
++        case AX_FORMAT_YUV420_PLANAR:
++        case AX_FORMAT_YUV420_PLANAR_VU:
++        case AX_FORMAT_YUV420_SEMIPLANAR:
++        case AX_FORMAT_YUV420_SEMIPLANAR_VU:
++        case AX_FORMAT_YUV422_PLANAR:
++        case AX_FORMAT_YUV422_PLANAR_VU:
++        case AX_FORMAT_YUV422_SEMIPLANAR:
++        case AX_FORMAT_YUV422_SEMIPLANAR_VU:
++        case AX_FORMAT_YUV422_INTERLEAVED_YUVY:
++        case AX_FORMAT_YUV422_INTERLEAVED_YUYV:
++        case AX_FORMAT_YUV422_INTERLEAVED_UYVY:
++        case AX_FORMAT_YUV422_INTERLEAVED_VYUY:
++        case AX_FORMAT_YUV444_PLANAR:
++        case AX_FORMAT_YUV444_PLANAR_VU:
++        case AX_FORMAT_YUV444_SEMIPLANAR:
++        case AX_FORMAT_YUV444_SEMIPLANAR_VU:
++        case AX_FORMAT_YUV444_PACKED:
++            uPixBits = 8;
++            break;
++        case AX_FORMAT_YUV400_10BIT:
++        case AX_FORMAT_YUV420_PLANAR_10BIT_UV_PACKED_4Y5B:
++        case AX_FORMAT_YUV420_SEMIPLANAR_10BIT_P101010:
++        case AX_FORMAT_YUV444_PACKED_10BIT_P101010:
++            uPixBits = 10;
++            break;
++        case AX_FORMAT_YUV420_PLANAR_10BIT_I010:
++        case AX_FORMAT_YUV420_SEMIPLANAR_10BIT_P010:
++        case AX_FORMAT_YUV420_SEMIPLANAR_10BIT_P016:
++        case AX_FORMAT_YUV420_SEMIPLANAR_10BIT_I016:
++        case AX_FORMAT_YUV444_PACKED_10BIT_P010:
++            uPixBits = 16;
++            break;
++        default:
++            uPixBits = 8;
++            break;
++        }
++
++        /* luma */
++        uHeightAlign = AX_VDEC_ALIGN(uHeight, 2);
++        uWidthAlign = AX_VDEC_ALIGN(uWidth, uAlignSize);
++        if (pstCompressInfo && (pstCompressInfo->enCompressMode == AX_COMPRESS_MODE_LOSSY)) {
++            AX_U32 ax_tile128x2_size = 128 * 2 * uPixBits / 8;
++
++            picSize = uWidthAlign * uHeightAlign
++                      * ax_fbc_tile128x2_size[pstCompressInfo->u32CompressLevel] / ax_tile128x2_size;
++        } else {
++            picSize = uHeightAlign * uWidthAlign;
++        }
++
++        /* chroma */
++        if (eOutputFormat != AX_FORMAT_YUV400) {
++            uHeightAlign = uHeightAlign >> 1;
++            if (pstCompressInfo && (pstCompressInfo->enCompressMode == AX_COMPRESS_MODE_LOSSY)) {
++                AX_U32 ax_tile128x2_size = 128 * 2 * uPixBits / 8;
++
++                picSize += uWidthAlign * uHeightAlign
++                           * ax_fbc_tile128x2_size[pstCompressInfo->u32CompressLevel] / ax_tile128x2_size;
++            } else {
++                picSize += uWidthAlign * uHeightAlign;
++            }
++        }
++
++        /* buffer size of dpb pic = picSize + dir_mv_size + tbl_size */
++        dmvMemSize = picSizeInMbs * 64;
++        refBuffSize = picSize  + dmvMemSize + 32;
++    } else if ((PT_JPEG == enType) || (PT_MJPEG == enType)) {
++        picSize = (AX_VDEC_ALIGN(uHeight, 2) * AX_VDEC_ALIGN(uWidth, 64) * 3) >> 1;
++        refBuffSize = picSize;
++    } else {
++        refBuffSize = -1;
++    }
++
++    return refBuffSize;
++}
++
++static int VdecChnAttrEnable(AVCodecContext *avctx)
++{
++    AXVdecContext *s = avctx->priv_data;
++    int ret = -1;
++    AX_VDEC_CHN VdChn = 0;
++    AX_VDEC_CHN_ATTR_T pstVdChnAttr;
++
++    memset(&pstVdChnAttr, 0, sizeof(pstVdChnAttr));
++
++    switch (avctx->sw_pix_fmt) {
++        case AV_PIX_FMT_NV12:
++            pstVdChnAttr.enImgFormat = AX_FORMAT_YUV420_SEMIPLANAR;
++            break;
++        case AV_PIX_FMT_NV21:
++            pstVdChnAttr.enImgFormat = AX_FORMAT_YUV420_SEMIPLANAR_VU;
++            break;
++        case AV_PIX_FMT_P010:
++            pstVdChnAttr.enImgFormat = AX_FORMAT_YUV420_SEMIPLANAR_10BIT_P010;
++            break;
++        case AV_PIX_FMT_YUV420P:
++            pstVdChnAttr.enImgFormat = AX_FORMAT_YUV420_PLANAR;
++            break;
++        default:
++            av_log(s, AV_LOG_ERROR, "%s Unsupport ImgFormat\n", __func__);
++            ret = AX_ERR_VDEC_NOT_SUPPORT;
++            goto ERR_RET;
++    }
++
++    if (!avctx->width) {
++        avctx->width = AX_VDEC_MAX_WIDTH;
++    }
++    if (!avctx->height) {
++        avctx->height = AX_VDEC_MAX_HEIGHT;
++    }
++
++    /* resize for vdec scaler function */
++    if ((s->resize.width && s->resize.width < avctx->width) || (s->resize.height && s->resize.height < avctx->height)) {
++        pstVdChnAttr.enOutputMode = AX_VDEC_OUTPUT_SCALE;
++        pstVdChnAttr.u32PicWidth = s->resize.width; /* picture output width */
++        pstVdChnAttr.u32PicHeight = s->resize.height; /* picture output height */
++        VdChn = 1;
++        avctx->width = s->resize.width;
++        avctx->height = s->resize.height;
++    } else {
++        pstVdChnAttr.enOutputMode = AX_VDEC_OUTPUT_ORIGINAL;
++        pstVdChnAttr.u32PicWidth = avctx->width; /* picture output width */
++        pstVdChnAttr.u32PicHeight = avctx->height; /* picture output height */
++    }
++
++    AX_U32 uWidth = pstVdChnAttr.u32PicWidth;
++    AX_U32 uPixBits = 8;
++
++    if (pstVdChnAttr.enImgFormat == AX_FORMAT_YUV420_SEMIPLANAR_10BIT_P010) {
++        uPixBits = 10;
++        if (pstVdChnAttr.stCompressInfo.enCompressMode == AX_COMPRESS_MODE_LOSSY)
++            pstVdChnAttr.u32FrameStride = AX_VDEC_ALIGN(AX_VDEC_ALIGN(uWidth, 128) * uPixBits, AX_VDEC_WIDTH_ALIGN * 8) / 8;
++        else
++            pstVdChnAttr.u32FrameStride = AX_VDEC_ALIGN(uWidth * 2, AX_VDEC_WIDTH_ALIGN);
++
++    } else if (pstVdChnAttr.enImgFormat == AX_FORMAT_YUV420_SEMIPLANAR_10BIT_P101010) {
++        uPixBits = 10;
++        if (pstVdChnAttr.stCompressInfo.enCompressMode == AX_COMPRESS_MODE_LOSSY)
++            pstVdChnAttr.u32FrameStride = AX_VDEC_ALIGN(AX_VDEC_ALIGN(uWidth, 128) * uPixBits,
++                                                                AX_VDEC_WIDTH_ALIGN * 8) / 8;
++        else
++            pstVdChnAttr.u32FrameStride = AX_VDEC_ALIGN(uWidth * 10 / 8, AX_VDEC_WIDTH_ALIGN);
++
++    } else {
++        uPixBits = 8;
++        if (pstVdChnAttr.u32FrameStride == 0) {
++            if (avctx->codec_id == AV_CODEC_ID_H264 || avctx->codec_id == AV_CODEC_ID_HEVC) {
++                pstVdChnAttr.u32FrameStride = AX_VDEC_ALIGN(uWidth * uPixBits, AX_VDEC_WIDTH_ALIGN * 8) / 8;
++            } else {
++                pstVdChnAttr.u32FrameStride = AX_VDEC_ALIGN(uWidth * uPixBits, AX_JDEC_WIDTH_ALIGN * 8) / 8;
++            }
++        }
++    }
++
++    pstVdChnAttr.u32FrameBufSize = AX_VDEC_GetPicBufferSize(pstVdChnAttr.u32FrameStride,
++                                                                        pstVdChnAttr.u32PicHeight,
++                                                                        pstVdChnAttr.enImgFormat,
++                                                                        &pstVdChnAttr.stCompressInfo,
++                                                                        s->enCodecType);
++    pstVdChnAttr.u32FrameBufCnt = s->u32FrameBufCnt;
++
++    s->u32FrameStride = pstVdChnAttr.u32FrameStride;
++    pstVdChnAttr.u32FramePadding = s->u32FramePadding;
++    pstVdChnAttr.u32CropX = 0;
++    pstVdChnAttr.u32CropY = 0;
++
++    pstVdChnAttr.u32OutputFifoDepth = s->u32OutputFifoDepth;
++    s->VdChn = VdChn;
++
++    ret = s->vdec_funcs.vdec_setchnattr(s->VdGrp, VdChn, &pstVdChnAttr);
++    if (ret != AX_SUCCESS) {
++        av_log(s, AV_LOG_ERROR, "VdGrp=%d, AXCL_VDEC_SetChnAttr FAILED! ret:0x%x\n",
++                s->VdGrp, ret);
++        goto ERR_RET;
++    }
++
++    ret = s->vdec_funcs.vdec_enablechn(s->VdGrp, VdChn);
++    if (ret != AX_SUCCESS) {
++        av_log(s, AV_LOG_ERROR, "VdGrp=%d, VdChn=%d, AXCL_VDEC_EnableChn FAILED! ret:0x%x\n",
++                s->VdGrp, VdChn, ret);
++    }
++
++ERR_RET:
++    return ret;
++
++}
++
++static inline int vdec_device_context_init(AVCodecContext *avctx)
++{
++    int ret;
++    axclrtContext context;
++    AXVdecContext *s = avctx->priv_data;
++
++    ret = s->rtdev_funcs.rt_get_current_context(&context);
++    if (ret == AXCL_ERR_CONTEXT_NO_BIND_CONTEXT)
++        ret = s->rtdev_funcs.rt_create_context(&context, s->devid);
++
++    if (ret) {
++        av_log(s, AV_LOG_ERROR, "%s failed to init device%d context, ret = 0x%x\n", __func__,
++               s->devid, ret);
++        ret = AVERROR_EXTERNAL;
++    }
++
++    return ret;
++}
++
++static av_cold int ax_decode_close(AVCodecContext *avctx)
++{
++    AX_S32 sRet = 0;
++    AXVdecContext *s = avctx->priv_data;
++
++    if (!s->bInited) {
++        av_log(s, AV_LOG_DEBUG, "ax_decode_close NO need close!\n");
++        return 0;
++    }
++
++    av_log(s, AV_LOG_DEBUG, "%s Enter!!\n", __func__);
++
++    sRet = s->vdec_funcs.vdec_stoprecvstream(s->VdGrp);
++    if (sRet != AX_SUCCESS) {
++        av_log(s, AV_LOG_ERROR, "VdGrp=%d, AXCL_VDEC_StopRecvStream FAILED! ret:0x%x\n",
++                s->VdGrp, sRet);
++    }
++
++    sRet = s->vdec_funcs.vdec_destroygrp(s->VdGrp);
++    if (sRet != AX_SUCCESS) {
++        av_log(s, AV_LOG_ERROR, "VdGrp=%d, AXCL_VDEC_DestroyGrp FAILED! ret:0x%x\n",
++                s->VdGrp, sRet);
++    }
++
++    sRet = s->vdec_funcs.vdec_deinit();
++    if (sRet != AX_SUCCESS) {
++        av_log(s, AV_LOG_ERROR, "%s vdec_deinit failed, ret = 0x%x\n", __func__, sRet);
++    }
++
++    if (!avctx->hw_device_ctx) {
++        if (sRet = s->sysdev_funcs.sys_deinit()) {
++            av_log(s, AV_LOG_ERROR, "%s sys_deinit failed on device%d, ret = 0x%x\n", __func__,
++                   s->devid, sRet);
++        }
++
++        sRet = s->rtdev_funcs.rt_destroy_context(s->context);
++        if (sRet) {
++            av_log(s, AV_LOG_ERROR, "%s rt_destroy_context(%d) failed, ret = 0x%x\n", __func__, s->devid, sRet);
++        }
++
++        sRet = s->rtdev_funcs.rt_reset_device(s->devid);
++        if (sRet) {
++            av_log(s, AV_LOG_ERROR, "%s rt_init failed, ret = 0x%x\n", __func__, sRet);
++        }
++
++        sRet = s->rtdev_funcs.rt_finalize();
++        if (sRet) {
++            av_log(s, AV_LOG_ERROR, "%s rt_finalize failed, ret = 0x%x\n", __func__, sRet);
++        }
++    }
++    av_log(s, AV_LOG_DEBUG, "%s End!!\n", __func__);
++
++    av_buffer_unref(&s->hwframe);
++    av_buffer_unref(&s->hwdevice);
++
++    SAFE_FREE_LIBRARY(s->rt_lib);
++    SAFE_FREE_LIBRARY(s->sys_lib);
++    SAFE_FREE_LIBRARY(s->mm_vdec_lib);
++
++    return 0;
++}
++
++static int hwframe_ctx_init(AVCodecContext *ctx)
++{
++    int ret;
++    AXVdecContext *vctx = ctx->priv_data;
++    AVBufferRef *hw_frames_ref;
++    AVHWFramesContext *frames_ctx;
++
++    if (ctx->hw_device_ctx && !ctx->hw_frames_ctx) {
++        hw_frames_ref = av_hwframe_ctx_alloc(ctx->hw_device_ctx);
++        if (!hw_frames_ref) {
++            av_log(ctx, AV_LOG_ERROR, "%s failed to alloc hwframe context\n", __func__);
++            return AVERROR(ENOMEM);
++        }
++
++        frames_ctx = (AVHWFramesContext *)(hw_frames_ref->data);
++        frames_ctx->format = AV_PIX_FMT_AXMM;
++        frames_ctx->sw_format = ctx->sw_pix_fmt;
++        frames_ctx->width = ctx->width;
++        frames_ctx->height = ctx->height;
++        frames_ctx->initial_pool_size = vctx->u32FrameBufCnt;
++
++        ret = av_hwframe_ctx_init(hw_frames_ref);
++        if (ret) {
++            av_log(ctx, AV_LOG_ERROR, "%s failed to init hwframe context\n", __func__);
++            av_buffer_unref(&hw_frames_ref);
++            return ret;
++        }
++
++        ctx->hw_frames_ctx = av_buffer_ref(hw_frames_ref);
++        av_buffer_unref(&hw_frames_ref);
++        if (!ctx->hw_frames_ctx)
++            return AVERROR(ENOMEM);
++
++        vctx->hwdevice = av_buffer_ref(ctx->hw_device_ctx);
++        if (!vctx->hwdevice) {
++            av_buffer_unref(&ctx->hw_frames_ctx);
++            ret = AVERROR(ENOMEM);
++            return ret;
++        }
++
++        vctx->hwframe = av_hwframe_ctx_alloc(vctx->hwdevice);
++        if (!vctx->hwframe) {
++            av_buffer_unref(&ctx->hw_frames_ctx);
++            av_buffer_unref(&vctx->hwdevice);
++            av_log(vctx, AV_LOG_ERROR, "av_hwframe_ctx_alloc failed\n");
++            ret = AVERROR(ENOMEM);
++            return ret;
++        }
++
++        av_log(ctx, AV_LOG_DEBUG, "%s hwframe context init success w:%d, h:%d, f:%d, sw_pix_fmt:%d\n", __func__, ctx->width, ctx->height, ctx->pix_fmt, ctx->sw_pix_fmt);
++    }
++
++    return 0;
++}
++
++static int ax_vdec_dl(AXVdecContext *s)
++{
++    AXRTDevFuncs *rtdev_funcs = &s->rtdev_funcs;
++    AXVdecFuncs *vdec_funcs = &s->vdec_funcs;
++    AXSYSDevFuncs *sys_funcs = &s->sysdev_funcs;
++
++#if defined(WIN32)
++
++    s->rt_lib = LoadLibraryA(LIB_AXCL_NAME);
++    CHECK_WITH_RET(!s->rt_lib, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_init = (pFnaxclInit)GetProcAddress(s->rt_lib, "axclInit");
++    CHECK_WITH_RET(!rtdev_funcs->rt_init, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_finalize = (pFnaxclFinalize)GetProcAddress(s->rt_lib, "axclFinalize");
++    CHECK_WITH_RET(!rtdev_funcs->rt_finalize, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_set_device = (pFnaxclrtSetDevice)GetProcAddress(s->rt_lib, "axclrtSetDevice");
++    CHECK_WITH_RET(!rtdev_funcs->rt_set_device, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_reset_device = (pFnaxclrtResetDevice)GetProcAddress(s->rt_lib, "axclrtResetDevice");
++    CHECK_WITH_RET(!rtdev_funcs->rt_set_device, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_get_device_list = (pFnaxclrtGetDeviceList)GetProcAddress(s->rt_lib, "axclrtGetDeviceList");
++    CHECK_WITH_RET(!rtdev_funcs->rt_get_device_list, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_create_context = (pFnaxclrtCreateContext)GetProcAddress(s->rt_lib, "axclrtCreateContext");
++    CHECK_WITH_RET(!rtdev_funcs->rt_create_context, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_get_current_context = (pFnaxclrtGetCurrentContext)GetProcAddress(s->rt_lib, "axclrtGetCurrentContext");
++    CHECK_WITH_RET(!rtdev_funcs->rt_get_current_context, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_destroy_context = (pFnaxclrtDestroyContext)GetProcAddress(s->rt_lib, "axclrtDestroyContext");
++    CHECK_WITH_RET(!rtdev_funcs->rt_destroy_context, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_memcpy = (pFnaxclrtMemcpy)GetProcAddress(s->rt_lib, "axclrtMemcpy");
++    CHECK_WITH_RET(!rtdev_funcs->rt_memcpy, AVERROR(EINVAL));
++
++    s->sys_lib = LoadLibraryA(LIB_SYS_NAME);
++    CHECK_WITH_RET(!s->sys_lib, AVERROR(EINVAL));
++
++    sys_funcs->sys_init = (pFnAXCL_SYS_Init)GetProcAddress(s->sys_lib, "AXCL_SYS_Init");
++    CHECK_WITH_RET(!sys_funcs->sys_init, AVERROR(EINVAL));
++
++    sys_funcs->sys_deinit = (pFnAXCL_SYS_Deinit)GetProcAddress(s->sys_lib, "AXCL_SYS_Deinit");
++    CHECK_WITH_RET(!sys_funcs->sys_deinit, AVERROR(EINVAL));
++
++    s->mm_vdec_lib = LoadLibraryA(LIB_VDEC_NAME);
++    CHECK_WITH_RET(!s->mm_vdec_lib, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_init = (pFnAXCL_VDEC_Init)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_Init");
++    CHECK_WITH_RET(!vdec_funcs->vdec_init, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_deinit = (pFnAXCL_VDEC_Deinit)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_Deinit");
++    CHECK_WITH_RET(!vdec_funcs->vdec_deinit, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_creategrp = (pFnAXCL_VDEC_CreateGrpEx)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_CreateGrpEx");
++    CHECK_WITH_RET(!vdec_funcs->vdec_creategrp, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_destroygrp = (pFnAXCL_VDEC_DestroyGrp)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_DestroyGrp");
++    CHECK_WITH_RET(!vdec_funcs->vdec_destroygrp, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_selectgrp = (pFnAXCL_VDEC_SelectGrp)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_SelectGrp");
++    CHECK_WITH_RET(!vdec_funcs->vdec_selectgrp, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_sendstream = (pFnAXCL_VDEC_SendStream)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_SendStream");
++    CHECK_WITH_RET(!vdec_funcs->vdec_sendstream, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_getframe = (pFnAXCL_VDEC_GetChnFrame)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_GetChnFrame");
++    CHECK_WITH_RET(!vdec_funcs->vdec_getframe, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_releaseframe = (pFnAXCL_VDEC_ReleaseChnFrame)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_ReleaseChnFrame");
++    CHECK_WITH_RET(!vdec_funcs->vdec_releaseframe, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_startrecvsStream = (pFnAXCL_VDEC_StartRecvStream)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_StartRecvStream");
++    CHECK_WITH_RET(!vdec_funcs->vdec_startrecvsStream, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_stoprecvstream = (pFnAXCL_VDEC_StopRecvStream)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_StopRecvStream");
++    CHECK_WITH_RET(!vdec_funcs->vdec_stoprecvstream, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_querystatus = (pFnAXCL_VDEC_QueryStatus)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_QueryStatus");
++    CHECK_WITH_RET(!vdec_funcs->vdec_querystatus, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_getstrminfo = (pFnAXCL_VDEC_ExtractStreamHeaderInfo)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_ExtractStreamHeaderInfo");
++    CHECK_WITH_RET(!vdec_funcs->vdec_querystatus, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_setgrpparam = (pFnAXCL_VDEC_SetGrpParam)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_SetGrpParam");
++    CHECK_WITH_RET(!vdec_funcs->vdec_setgrpparam, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_setdispmode = (pFnAXCL_VDEC_SetDisplayMode)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_SetDisplayMode");
++    CHECK_WITH_RET(!vdec_funcs->vdec_setdispmode, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_enablechn = (pFnAXCL_VDEC_EnableChn)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_EnableChn");
++    CHECK_WITH_RET(!vdec_funcs->vdec_enablechn, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_disablechn = (pFnAXCL_VDEC_DisableChn)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_DisableChn");
++    CHECK_WITH_RET(!vdec_funcs->vdec_disablechn, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_setchnattr = (pFnAXCL_VDEC_SetChnAttr)GetProcAddress(s->mm_vdec_lib, "AXCL_VDEC_SetChnAttr");
++    CHECK_WITH_RET(!vdec_funcs->vdec_setchnattr, AVERROR(EINVAL));
++
++#else // !defined(WIN32)
++
++    s->rt_lib = dlopen(LIB_AXCL_NAME, RTLD_NOW | RTLD_GLOBAL);
++    CHECK_WITH_RET(!s->rt_lib, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_init = dlsym(s->rt_lib, "axclInit");
++    CHECK_WITH_RET(!rtdev_funcs->rt_init, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_finalize = dlsym(s->rt_lib, "axclFinalize");
++    CHECK_WITH_RET(!rtdev_funcs->rt_finalize, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_set_device = dlsym(s->rt_lib, "axclrtSetDevice");
++    CHECK_WITH_RET(!rtdev_funcs->rt_set_device, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_reset_device = dlsym(s->rt_lib, "axclrtResetDevice");
++    CHECK_WITH_RET(!rtdev_funcs->rt_set_device, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_get_device_list = dlsym(s->rt_lib, "axclrtGetDeviceList");
++    CHECK_WITH_RET(!rtdev_funcs->rt_get_device_list, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_create_context = dlsym(s->rt_lib, "axclrtCreateContext");
++    CHECK_WITH_RET(!rtdev_funcs->rt_create_context, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_get_current_context = dlsym(s->rt_lib, "axclrtGetCurrentContext");
++    CHECK_WITH_RET(!rtdev_funcs->rt_get_current_context, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_destroy_context = dlsym(s->rt_lib, "axclrtDestroyContext");
++    CHECK_WITH_RET(!rtdev_funcs->rt_destroy_context, AVERROR(EINVAL));
++
++    rtdev_funcs->rt_memcpy = dlsym(s->rt_lib, "axclrtMemcpy");
++    CHECK_WITH_RET(!rtdev_funcs->rt_memcpy, AVERROR(EINVAL));
++
++    s->sys_lib = dlopen(LIB_SYS_NAME, RTLD_NOW | RTLD_GLOBAL);
++    CHECK_WITH_RET(!s->sys_lib, AVERROR(EINVAL));
++
++    sys_funcs->sys_init = dlsym(s->sys_lib, "AXCL_SYS_Init");
++    CHECK_WITH_RET(!sys_funcs->sys_init, AVERROR(EINVAL));
++
++    sys_funcs->sys_deinit = dlsym(s->sys_lib, "AXCL_SYS_Deinit");
++    CHECK_WITH_RET(!sys_funcs->sys_deinit, AVERROR(EINVAL));
++
++    s->mm_vdec_lib = dlopen(LIB_VDEC_NAME, RTLD_NOW | RTLD_GLOBAL);
++    CHECK_WITH_RET(!s->mm_vdec_lib, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_init = dlsym(s->mm_vdec_lib, "AXCL_VDEC_Init");
++    CHECK_WITH_RET(!vdec_funcs->vdec_init, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_deinit = dlsym(s->mm_vdec_lib, "AXCL_VDEC_Deinit");
++    CHECK_WITH_RET(!vdec_funcs->vdec_deinit, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_creategrp = dlsym(s->mm_vdec_lib, "AXCL_VDEC_CreateGrpEx");
++    CHECK_WITH_RET(!vdec_funcs->vdec_creategrp, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_destroygrp = dlsym(s->mm_vdec_lib, "AXCL_VDEC_DestroyGrp");
++    CHECK_WITH_RET(!vdec_funcs->vdec_destroygrp, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_selectgrp = dlsym(s->mm_vdec_lib, "AXCL_VDEC_SelectGrp");
++    CHECK_WITH_RET(!vdec_funcs->vdec_selectgrp, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_sendstream = dlsym(s->mm_vdec_lib, "AXCL_VDEC_SendStream");
++    CHECK_WITH_RET(!vdec_funcs->vdec_sendstream, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_getframe = dlsym(s->mm_vdec_lib, "AXCL_VDEC_GetChnFrame");
++    CHECK_WITH_RET(!vdec_funcs->vdec_getframe, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_releaseframe = dlsym(s->mm_vdec_lib, "AXCL_VDEC_ReleaseChnFrame");
++    CHECK_WITH_RET(!vdec_funcs->vdec_releaseframe, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_startrecvsStream = dlsym(s->mm_vdec_lib, "AXCL_VDEC_StartRecvStream");
++    CHECK_WITH_RET(!vdec_funcs->vdec_startrecvsStream, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_stoprecvstream = dlsym(s->mm_vdec_lib, "AXCL_VDEC_StopRecvStream");
++    CHECK_WITH_RET(!vdec_funcs->vdec_stoprecvstream, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_querystatus = dlsym(s->mm_vdec_lib, "AXCL_VDEC_QueryStatus");
++    CHECK_WITH_RET(!vdec_funcs->vdec_querystatus, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_getstrminfo = dlsym(s->mm_vdec_lib, "AXCL_VDEC_ExtractStreamHeaderInfo");
++    CHECK_WITH_RET(!vdec_funcs->vdec_querystatus, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_setgrpparam = dlsym(s->mm_vdec_lib, "AXCL_VDEC_SetGrpParam");
++    CHECK_WITH_RET(!vdec_funcs->vdec_setgrpparam, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_setdispmode = dlsym(s->mm_vdec_lib, "AXCL_VDEC_SetDisplayMode");
++    CHECK_WITH_RET(!vdec_funcs->vdec_setdispmode, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_enablechn = dlsym(s->mm_vdec_lib, "AXCL_VDEC_EnableChn");
++    CHECK_WITH_RET(!vdec_funcs->vdec_enablechn, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_disablechn = dlsym(s->mm_vdec_lib, "AXCL_VDEC_DisableChn");
++    CHECK_WITH_RET(!vdec_funcs->vdec_disablechn, AVERROR(EINVAL));
++
++    vdec_funcs->vdec_setchnattr = dlsym(s->mm_vdec_lib, "AXCL_VDEC_SetChnAttr");
++    CHECK_WITH_RET(!vdec_funcs->vdec_setchnattr, AVERROR(EINVAL));
++
++#endif // !defined(WIN32)
++
++    return 0;
++}
++
++AX_U64  u64Pts_Frm = 0;
++
++static int hevc_get_headerinfo(AVCodecContext *avctx)
++{
++    AXVdecContext *s = avctx->priv_data;
++    HEVCParamSets ps;
++    HEVCSEI sei;
++
++    const HEVCVPS *vps = NULL;
++    const HEVCPPS *pps = NULL;
++    const HEVCSPS *sps = NULL;
++    int is_nalff = 0;
++    int nal_length_size = 0;
++    int ref_num = 0;
++    int i = 0;
++    int ret = 0;
++
++    memset(&ps, 0, sizeof(ps));
++    memset(&sei, 0, sizeof(sei));
++
++    ret = ff_hevc_decode_extradata(avctx->extradata, avctx->extradata_size,
++                                   &ps, &sei, &is_nalff, &nal_length_size, 0, 1, avctx);
++    if (ret < 0) {
++        av_log(avctx, AV_LOG_DEBUG, "%s extradata_size:%d, ret = 0x%x\n", __func__, avctx->extradata_size, ret);
++    }
++    for (i = 0; i < HEVC_MAX_VPS_COUNT; i++) {
++        if (ps.vps_list[i]) {
++            vps = ps.vps_list[i];
++            break;
++        }
++    }
++
++    for (i = 0; i < HEVC_MAX_PPS_COUNT; i++) {
++        if (ps.pps_list[i]) {
++            pps = ps.pps_list[i];
++            break;
++        }
++    }
++
++    if (pps) {
++        if (ps.sps_list[pps->sps_id]) {
++            sps = ps.sps_list[pps->sps_id];
++
++            avctx->width = sps->width;
++            avctx->height = sps->height;
++            s->bit_depth_luma = sps->bit_depth;
++            s->bit_depth_chroma = sps->bit_depth_chroma;
++
++            ref_num = MAX(1, sps->temporal_layer[sps->max_sub_layers - 1].max_dec_pic_buffering);
++            s->u32FrameBufCnt = ref_num + 2;
++            s->u32OutputFifoDepth = ref_num + 2;
++            av_log(avctx, AV_LOG_INFO, "HEVC decoder w:%d, h:%d, bit_depth:%d, bit_depth_chroma:%d, ref_num:%d\n",
++                   sps->width, sps->height, sps->bit_depth, sps->bit_depth_chroma, s->u32FrameBufCnt);
++        }
++    }
++
++ERR_RET:
++    return 0;
++}
++
++static int h264_get_headerinfo(AVCodecContext *avctx)
++{
++    AXVdecContext *s = avctx->priv_data;
++    int i;
++    int ret = 0;
++    int ref_num = 0;
++
++    H264ParamSets ps;
++    const PPS *pps = NULL;
++    const SPS *sps = NULL;
++    int is_avc = 0;
++    int nal_length_size = 0;
++
++    memset(&ps, 0, sizeof(ps));
++
++    ret = ff_h264_decode_extradata(avctx->extradata, avctx->extradata_size,
++                                   &ps, &is_avc, &nal_length_size, 0, avctx);
++    if (ret < 0) {
++       av_log(avctx, AV_LOG_DEBUG, "%s extradata_size:%d ret = 0x%x\n", __func__, avctx->extradata_size, ret);
++    }
++
++    for (i = 0; i < MAX_PPS_COUNT; i++) {
++        if (ps.pps_list[i]) {
++            pps = ps.pps_list[i];
++            break;
++        }
++    }
++
++    if (pps) {
++        if (ps.sps_list[pps->sps_id]) {
++            sps = ps.sps_list[pps->sps_id];
++            if (!avctx->width || (!avctx->height)) {
++                avctx->width = sps->mb_width * 16;
++                avctx->height = sps->mb_height * 16;
++            }
++            s->bit_depth_luma = sps->bit_depth_luma;
++            s->bit_depth_chroma = sps->bit_depth_chroma;
++
++            ref_num = MAX(1, sps->num_reorder_frames);
++            if (sps->ref_frame_count > ref_num) {
++                ref_num = sps->ref_frame_count;
++            }
++            s->u32FrameBufCnt = ref_num + 1;
++            s->u32OutputFifoDepth = ref_num + 1;
++            av_log(avctx, AV_LOG_INFO, "H264 decoder w:%d, h:%d, bit_depth_luma:%d, bit_depth_chroma:%d, ref_num:%d\n",
++                   sps->mb_width, sps->mb_height, sps->bit_depth_luma, sps->bit_depth_chroma, s->u32FrameBufCnt);
++        }
++    }
++
++done:
++
++    return 0;
++}
++
++static av_cold int ax_decode_init(AVCodecContext *avctx)
++{
++    AXVdecContext *s = avctx->priv_data;
++    int ret = 0;
++    AX_VDEC_GRP VdGrp = 0;
++    AX_VDEC_GRP_ATTR_T pstVdGrpAttr = {0};
++    AX_VDEC_MOD_ATTR_T stModAttr = {0};
++    axclrtDeviceList lst;
++
++    s->bInited = AX_FALSE;
++    u64Pts_Frm = 0;
++    enum AVPixelFormat pix_fmts[6] = { AV_PIX_FMT_AXMM,
++                                       AV_PIX_FMT_NV12,
++                                       AV_PIX_FMT_NV21,
++                                       AV_PIX_FMT_YUV420P,
++                                       AV_PIX_FMT_P010,
++                                       AV_PIX_FMT_NONE };
++
++    ret = ax_vdec_dl(s);
++    if (ret) {
++        av_log(s, AV_LOG_ERROR, "%s ax_vdec_dl failed, ret = 0x%x\n", __func__, ret);
++        goto ERR_RET;
++    }
++
++    if (!avctx->internal->is_copy) {
++        if (avctx->extradata_size > 0 && avctx->extradata) {
++            if (avctx->codec_id == AV_CODEC_ID_HEVC) {
++                ret = hevc_get_headerinfo(avctx);
++                if (ret) {
++                    av_log(s, AV_LOG_ERROR, "%s hevc_set_extradata failed, ret = 0x%x\n", __func__, ret);
++                    goto ERR_RET;
++                }
++            } else if (avctx->codec_id == AV_CODEC_ID_H264) {
++                ret = h264_get_headerinfo(avctx);
++                if (ret < 0) {
++                    av_log(s, AV_LOG_ERROR, "%s h264_set_extradata failed, ret = 0x%x\n", __func__, ret);
++                    goto ERR_RET;
++                }
++            } else {
++                av_log(s, AV_LOG_ERROR, "%s not support codec_id:%d\n", __func__, avctx->codec_id);
++                goto ERR_RET;
++            }
++        } else {
++            av_log(s, AV_LOG_DEBUG, "%s data size zero\n", __func__);
++            goto ERR_RET;
++        }
++    }
++
++    if (!avctx->width) {
++        avctx->width = 8192;
++    }
++
++    if (!avctx->height) {
++        avctx->height = 8192;
++    }
++
++    if (!s->u32FrameBufCnt)
++        s->u32FrameBufCnt = AX_VDEC_DPB_NUM;
++
++    if (!s->u32OutputFifoDepth)
++        s->u32OutputFifoDepth = AX_VDEC_DPB_NUM;
++
++    av_log(s, AV_LOG_DEBUG, "%s ax_vdec_init sw_pix_fmt:%d, pix_fmt:%d\n", __func__, avctx->sw_pix_fmt, avctx->pix_fmt);
++
++    ret = ff_get_format(avctx, pix_fmts);
++    if (ret < 0) {
++        av_log(avctx, AV_LOG_ERROR, "ff_get_format failed: %d\n", ret);
++        goto ERR_RET;
++    }
++    avctx->pix_fmt = ret;
++    avctx->thread_count = 1;
++    avctx->thread_type = FF_THREAD_FRAME;
++    s->format = AV_PIX_FMT_NONE;
++
++    if ((s->bit_depth_luma == 10) && (s->bit_depth_chroma == 10)) {
++        avctx->sw_pix_fmt = AV_PIX_FMT_P010;
++    } else {
++        avctx->sw_pix_fmt = AV_PIX_FMT_NV12;
++    }
++
++    ret = hwframe_ctx_init(avctx);
++    if (ret)
++        goto ERR_RET;
++
++    /* if hw device start, used same device id */
++    if (avctx->hw_device_ctx) {
++        AVHWDeviceContext *device_ctx;
++        AVHWFramesContext *hwframe_ctx;
++
++        hwframe_ctx = (AVHWFramesContext*)s->hwframe->data;
++        device_ctx = hwframe_ctx->device_ctx;
++        AXMMDeviceContext *hwdc_priv = device_ctx->hwctx;
++
++        s->devid = hwdc_priv->devid;
++        ret = s->rtdev_funcs.rt_get_current_context(&s->context);
++        if (ret == AXCL_ERR_CONTEXT_NO_BIND_CONTEXT)
++            ret = s->rtdev_funcs.rt_create_context(&s->context, hwdc_priv->devid);
++
++        if (ret) {
++            av_log(s, AV_LOG_ERROR, "%s failed to init device%d context, ret = 0x%x\n", __func__,
++                    s->devid, ret);
++            ret = AVERROR_EXTERNAL;
++            goto ERR_FREE;
++        }
++    } else {
++        ret = s->device_index && sscanf(s->device_index, "%d", &s->index);
++        if (s->index < 0) {
++            av_log(avctx, AV_LOG_ERROR, "Set device id error, device_index:%d, ret:%d\n", s->index, ret);
++            s->index = 0;
++        }
++
++        ret = s->rtdev_funcs.rt_init(NULL);
++        if (ret) {
++            av_log(s, AV_LOG_ERROR, "%s rt_init failed, ret = 0x%x\n", __func__, ret);
++            goto ERR_RET;
++        }
++
++        ret = s->rtdev_funcs.rt_get_device_list(&lst);
++        if (ret || !lst.num) {
++            if (!ret)
++                ret = AVERROR(ENOSYS);
++
++            av_log(s, AV_LOG_ERROR, "%s no device is connected, ret = 0x%x\n", __func__, ret);
++            goto ERR_RET1;
++        }
++
++        if (s->index >= lst.num) {
++            av_log(s, AV_LOG_ERROR, "device index %d is out of connected device num %d", s->index, lst.num);
++            ret = -1;
++            goto ERR_RET1;
++        }
++
++        s->devid =  lst.devices[s->index];
++
++        ret = s->rtdev_funcs.rt_set_device(s->devid);
++        if (ret) {
++            av_log(s, AV_LOG_ERROR, "%s rt_set_device(%d) failed, ret = 0x%x\n", __func__, s->devid, ret);
++            goto ERR_RET2;
++        }
++
++        ret = s->rtdev_funcs.rt_create_context(&s->context, s->devid);
++        if (ret) {
++            av_log(s, AV_LOG_ERROR, "%s rt_create_context(%d) failed, ret = 0x%x\n", __func__, s->devid, ret);
++            goto ERR_RET2;
++        }
++
++        if (ret = s->sysdev_funcs.sys_init()) {
++            av_log(s, AV_LOG_ERROR, "%s sys_init failed on device%d, ret = 0x%x\n", __func__,
++                   s->devid, ret);
++            goto ERR_RET3;
++        }
++    }
++
++    if (avctx->codec_id == AV_CODEC_ID_H264) {
++        pstVdGrpAttr.enCodecType = PT_H264;
++    } else if (avctx->codec_id == AV_CODEC_ID_HEVC) {
++        pstVdGrpAttr.enCodecType = PT_H265;
++    } else if (avctx->codec_id == AV_CODEC_ID_MJPEG) {
++        pstVdGrpAttr.enCodecType = PT_JPEG;
++    } else {
++        av_log(s, AV_LOG_ERROR, "%s NOT SUPPORT CODEC ID\n", __func__);
++        goto ERR_RET4;
++    }
++
++    ret = s->resize_expr && sscanf(s->resize_expr, "%dx%d",
++                                   &s->resize.width, &s->resize.height);
++    if (ret) {
++        av_log(avctx, AV_LOG_DEBUG, "No need resize expressions w:%d, h:%d\n", s->resize.width, s->resize.height);
++    }
++
++    stModAttr.enDecModule = AX_ENABLE_BOTH_VDEC_JDEC;
++    stModAttr.u32MaxGroupCount = VDEC_GRP_MAX;
++    stModAttr.bVdecMc = 0;
++    stModAttr.VdecVirtChn = 0;
++    s->bEof = AX_FALSE;
++
++    ret = s->vdec_funcs.vdec_init(&stModAttr);
++    if (ret != AX_SUCCESS) {
++        av_log(s, AV_LOG_ERROR, "%s vdec_init failed, ret = 0x%x\n", __func__, ret);
++        goto ERR_RET4;
++    }
++
++    av_log(s, AV_LOG_DEBUG, "%s ax_vdec_init, H=%d, W=%d, sw_pix_fmt:%d, pix_fmt:%d, format:%d\n",
++           __func__, avctx->height, avctx->width, avctx->sw_pix_fmt, avctx->pix_fmt, s->format);
++
++    pstVdGrpAttr.u32MaxPicWidth = AX_VDEC_ALIGN(avctx->width, 256);  /*Max pic width*/
++    pstVdGrpAttr.u32MaxPicHeight = AX_VDEC_ALIGN(avctx->height, 16);  /*Max pic height*/
++
++    pstVdGrpAttr.u32StreamBufSize = STREAM_BUFFER_MIN_SIZE;
++    pstVdGrpAttr.enInputMode = AX_VDEC_INPUT_MODE_FRAME;
++    pstVdGrpAttr.bSdkAutoFramePool = AX_TRUE; /*use private pool*/
++
++    ret = s->vdec_funcs.vdec_creategrp(&VdGrp, &pstVdGrpAttr);
++    if (ret != AX_SUCCESS) {
++        av_log(s, AV_LOG_ERROR, "%s vdec_creategrp failed, ret = 0x%x\n", __func__, ret);
++        goto ERR_RET5;
++    }
++
++    s->VdGrp = VdGrp;
++    s->enCodecType = pstVdGrpAttr.enCodecType;
++
++    ret = VdecChnAttrEnable(avctx);
++    if (ret != AX_SUCCESS) {
++        av_log(s, AV_LOG_ERROR, "%s VdecChnAttrEnable failed, ret = 0x%x\n", __func__, ret);
++        goto ERR_RET_CHNATTR_FREE;
++    }
++
++    ret = s->vdec_funcs.vdec_setdispmode(VdGrp, AX_VDEC_DISPLAY_MODE_PLAYBACK);
++    if (ret != AX_SUCCESS) {
++        av_log(s, AV_LOG_ERROR, "VdGrp=%d vdec_setdispmode failed, ret = 0x%x\n", VdGrp, ret);
++        goto ERR_RET_CHNATTR_FREE;
++    }
++
++    AX_VDEC_GRP_PARAM_T stGrpParam;
++    memset(&stGrpParam, 0, sizeof(stGrpParam));
++    stGrpParam.stVdecVideoParam.enOutputOrder = AX_VDEC_OUTPUT_ORDER_DISP;
++    stGrpParam.stVdecVideoParam.enVdecMode = VIDEO_DEC_MODE_IPB;
++
++    ret = s->vdec_funcs.vdec_setgrpparam(VdGrp, &stGrpParam);
++    if (ret != AX_SUCCESS) {
++        av_log(s, AV_LOG_ERROR, "VdGrp=%d vdec_setgrpparam failed, ret = 0x%x\n", VdGrp, ret);
++        goto ERR_RET_CHNATTR_FREE;
++    }
++
++    AX_VDEC_RECV_PIC_PARAM_T tRecvParam;
++    memset(&tRecvParam, 0, sizeof(tRecvParam));
++
++    ret = s->vdec_funcs.vdec_startrecvsStream(VdGrp, &tRecvParam);
++    if (ret != AX_SUCCESS) {
++        av_log(s, AV_LOG_ERROR, "VdGrp=%d vdec_startrecvsStream failed, ret = 0x%x\n", VdGrp, ret);
++        goto ERR_RET_CHNATTR_FREE;
++    }
++
++    av_log(s, AV_LOG_DEBUG, "ax_decode_init END s->VdGrp=%d\n", s->VdGrp);
++
++    s->bInited = AX_TRUE;
++    return 0;
++
++ERR_RET_CHNATTR_FREE:
++    while (1) {
++        ret = s->vdec_funcs.vdec_destroygrp(VdGrp);
++        if (ret == AX_ERR_VDEC_BUSY) {
++            av_log(s, AV_LOG_ERROR, "VdGrp=%d vdec_destroygrp failed, ret = 0x%x\n", VdGrp, ret);
++            usleep(10000);
++            continue;
++        }
++        break;
++    }
++ERR_RET5:
++    s->vdec_funcs.vdec_deinit();
++ERR_RET4:
++    s->sysdev_funcs.sys_deinit();
++ERR_RET3:
++    s->rtdev_funcs.rt_destroy_context(s->context);
++ERR_RET2:
++    s->rtdev_funcs.rt_reset_device(s->devid);
++ERR_RET1:
++    s->rtdev_funcs.rt_finalize();
++ERR_FREE:
++    av_buffer_unref(&s->hwframe);
++    av_buffer_unref(&s->hwdevice);
++ERR_RET:
++    SAFE_FREE_LIBRARY(s->rt_lib);
++    SAFE_FREE_LIBRARY(s->sys_lib);
++    SAFE_FREE_LIBRARY(s->mm_vdec_lib);
++
++    return ret;
++}
++
++static int ax_decode_output_frame(AVCodecContext *avctx, AVFrame *frame)
++{
++    AXVdecContext *s = avctx->priv_data;
++    AXRTDevFuncs *rtdev_funcs = &s->rtdev_funcs;
++    AX_S32 ret;
++    AX_VIDEO_FRAME_INFO_T *pstFrameInfo = NULL;
++    void *buf = NULL;
++    AX_S32 y_size = 0;
++    AX_S32 uv_size = 0;
++
++    pstFrameInfo = av_malloc(sizeof(*pstFrameInfo));
++    memset(pstFrameInfo, 0x0, sizeof(AX_VIDEO_FRAME_INFO_T));
++
++    ret = s->vdec_funcs.vdec_getframe(s->VdGrp, s->VdChn, pstFrameInfo, 100);
++    if (ret == AX_SUCCESS) {
++        frame->width = pstFrameInfo->stVFrame.u32Width;
++        frame->height = pstFrameInfo->stVFrame.u32Height;
++        frame->linesize[0] = pstFrameInfo->stVFrame.u32PicStride[0];
++        frame->linesize[1] = pstFrameInfo->stVFrame.u32PicStride[1];
++
++        frame->pts = pstFrameInfo->stVFrame.u64PTS;
++
++        frame->pkt_pos = -1;
++        frame->duration = 0;
++        frame->pkt_size = -1;
++    } else  if (ret == AX_ERR_VDEC_FLOW_END) {
++        av_log(s, AV_LOG_INFO, "VdGrp=%d vdec_getframe AX_ERR_VDEC_FLOW_END\n", s->VdGrp);
++        avcodec_flush_buffers(avctx);
++        ret = AVERROR_EOF;
++        goto ERR_RET;
++    } else if (ret == AX_ERR_VDEC_STRM_ERROR) {
++        av_log(s, AV_LOG_ERROR, "VdGrp=%d vdec_getframe AX_ERR_VDEC_STRM_ERROR\n", s->VdGrp);
++        ret = AVERROR_INVALIDDATA;
++        goto ERR_RET;
++    } else if (ret == AX_ERR_VDEC_BUF_EMPTY) {
++        av_log(s, AV_LOG_INFO, "VdGrp=%d vdec_getframe AX_ERR_VDEC_BUF_EMPTY\n", s->VdGrp);
++        //ret = AVERROR(EAGAIN);
++        goto ERR_RET;
++    } else {
++        av_log(s, AV_LOG_ERROR, "VdGrp=%d vdec_getframe ret = 0x%x\n", s->VdGrp, ret);
++        ret = AVERROR_EXTERNAL;
++        goto ERR_RET;
++    }
++
++    if (avctx->pix_fmt == AV_PIX_FMT_AXMM) {
++        AX_VIDEO_FRAME_T *fr;
++        AVHWFramesContext *frames_ctx;
++        frames_ctx = (AVHWFramesContext*)avctx->hw_frames_ctx->data;
++        AXMMFramesContext *hwfc_priv = frames_ctx->hwctx;
++        hwfc_priv->p.blk_id = pstFrameInfo->stVFrame.u32BlkId[0];
++
++        ret = av_hwframe_get_buffer(avctx->hw_frames_ctx, frame, 0);
++        if (ret) {
++            av_log(s, AV_LOG_ERROR, "%s failed to av_hwframe_get_buffer, ret = 0x%x, %p\n", __func__, ret, avctx->hw_frames_ctx);
++            goto ERR_RET1;
++        }
++        fr = (AX_VIDEO_FRAME_T *)frame->data[4];
++        memcpy(fr, &pstFrameInfo->stVFrame, sizeof(AX_VIDEO_FRAME_T));
++    } else if (avctx->pix_fmt == AV_PIX_FMT_NV12 || avctx->pix_fmt == AV_PIX_FMT_NV21 ||
++               avctx->pix_fmt == AV_PIX_FMT_YUV420P || avctx->pix_fmt == AV_PIX_FMT_P010) {
++        y_size = frame->linesize[0] * frame->height;
++        buf = av_malloc(y_size);
++        frame->buf[0]  = av_buffer_create(buf, y_size, av_buffer_default_free, NULL, 0);
++
++        ret = rtdev_funcs->rt_memcpy(buf, (void *)pstFrameInfo->stVFrame.u64PhyAddr[0], y_size, AXCL_MEMCPY_DEVICE_TO_HOST);
++        if (ret) {
++            av_log(s, AV_LOG_ERROR, "%s failed to transfer data from device:0x%llx to host:0x%p, ret = 0x%x\n", __func__,
++                    pstFrameInfo->stVFrame.u64PhyAddr[0], buf, ret);
++            goto ERR_RET1;
++        }
++
++        frame->buf[0]->data = frame->data[0] = (uint8_t *)buf;
++
++        uv_size = frame->linesize[1] * frame->height / 2;
++        buf = av_malloc(uv_size);
++
++        ret = rtdev_funcs->rt_memcpy(buf, (void *)pstFrameInfo->stVFrame.u64PhyAddr[1], uv_size, AXCL_MEMCPY_DEVICE_TO_HOST);
++        if (ret) {
++            av_log(s, AV_LOG_ERROR, "%s failed to transfer data from device:0x%llx to host:0x%p, ret = 0x%x\n", __func__,
++                    pstFrameInfo->stVFrame.u64PhyAddr[1], buf, ret);
++            goto ERR_RET1;
++        }
++
++        frame->buf[1]  = av_buffer_create(buf, uv_size, av_buffer_default_free, NULL, 0);
++        frame->buf[1]->data = frame->data[1] = (uint8_t *)buf;
++
++        switch (pstFrameInfo->stVFrame.enImgFormat) {
++        case AX_FORMAT_YUV420_SEMIPLANAR:
++            frame->format = AV_PIX_FMT_NV12;
++            break;
++        case AX_FORMAT_YUV420_SEMIPLANAR_VU:
++            frame->format = AV_PIX_FMT_NV21;
++            break;
++        case AX_FORMAT_YUV420_SEMIPLANAR_10BIT_P010 :
++            frame->format = AV_PIX_FMT_P010;
++            break;
++        default:
++            frame->format = AV_PIX_FMT_YUV420P;
++            break;
++        }
++    } else {
++        av_log(s, AV_LOG_ERROR, "%s not support format:%d\n", __func__, pstFrameInfo->stVFrame.enImgFormat);
++        goto ERR_RET1;
++    }
++
++    av_log(s, AV_LOG_DEBUG, "VdGrp=%d, VdChn:%d, AXCL_VDEC_GetChnFrame  w:%d, h:%d\n"
++             "u64PhyAddr[0]:0x%llX, BlkId[0]:0x%x, BlkId[1]:0x%x, f:%d, Stride:%d, %d\n",
++             s->VdGrp, s->VdChn, pstFrameInfo->stVFrame.u32Width, pstFrameInfo->stVFrame.u32Height, pstFrameInfo->stVFrame.u64PhyAddr[0],
++             pstFrameInfo->stVFrame.u32BlkId[0], pstFrameInfo->stVFrame.u32BlkId[1], pstFrameInfo->stVFrame.enImgFormat, pstFrameInfo->stVFrame.u32PicStride[0], frame->linesize[0]);
++
++    ret = s->vdec_funcs.vdec_releaseframe(s->VdGrp, s->VdChn, pstFrameInfo);
++    if (ret) {
++        av_log(s, AV_LOG_ERROR, "VdGrp=%d, VdChn:%d, AXCL_VDEC_ReleaseChnFrame FAILED! res:0x%x\n"
++                "u64PhyAddr[0]:0x%llX, BlkId[0]:0x%x, BlkId[1]:0x%x\n",
++                 s->VdGrp, s->VdChn, ret, pstFrameInfo->stVFrame.u64PhyAddr[0],
++                 pstFrameInfo->stVFrame.u32BlkId[0], pstFrameInfo->stVFrame.u32BlkId[1]);
++    }
++
++    av_free(pstFrameInfo);
++    return 0;
++
++ERR_RET1:
++    s->vdec_funcs.vdec_releaseframe(s->VdGrp, s->VdChn, pstFrameInfo);
++ERR_RET:
++    av_free(pstFrameInfo);
++    return ret;
++}
++
++static int ax_decode_frame(AVCodecContext *avctx, struct AVFrame *frame,
++                            int *got_frame, AVPacket *avpkt)
++{
++    AXVdecContext *s = avctx->priv_data;
++    int ret;
++    AX_VDEC_STREAM_T tStrInfo = {0};
++
++    if (!s->bInited) {
++        return 0;
++    }
++
++    ret = vdec_device_context_init(avctx);
++    if (ret) {
++        av_log(s, AV_LOG_ERROR, "VdGrp=%d ax_decode_frame failed ret:0x%x\n", s->VdGrp, ret);
++        return ret;
++    }
++
++    if (avpkt->size) {
++        tStrInfo.pu8Addr = avpkt->data;
++        tStrInfo.u64PhyAddr = 0;
++        tStrInfo.u32StreamPackLen = avpkt->size;
++        tStrInfo.bEndOfStream = AX_FALSE;
++        tStrInfo.u64PTS = u64Pts_Frm;
++        u64Pts_Frm ++;
++    } else {
++        tStrInfo.pu8Addr = NULL;
++        tStrInfo.u64PhyAddr = 0;
++        tStrInfo.u32StreamPackLen = 0;
++        tStrInfo.bEndOfStream = AX_TRUE;
++    }
++
++    av_log(s, AV_LOG_DEBUG, "%s packet data size:%d, pts:%llx, dts:%llx !\n", __func__, avpkt->size, avpkt->pts, avpkt->dts);
++
++    if (!s->bEof) {
++        ret = s->vdec_funcs.vdec_sendstream((s->VdGrp), &tStrInfo, -1);
++        if (ret == AX_SUCCESS) {
++            av_log(s, AV_LOG_DEBUG, "VdGrp=%d vdec_sendstream success\n", s->VdGrp);
++        } else {
++            av_log(s, AV_LOG_ERROR, "VdGrp=%d vdec_sendstream failed ret:0x%x\n", s->VdGrp, ret);
++        }
++    }
++
++    ret = ax_decode_output_frame(avctx, frame);
++    if (ret == AX_SUCCESS) {
++        *got_frame = 1;
++        frame->pts = avpkt->dts;
++#if FF_API_PKT_PTS
++FF_DISABLE_DEPRECATION_WARNINGS
++        frame->pkt_pts = frame->pts;
++FF_ENABLE_DEPRECATION_WARNINGS
++#endif
++    } else {
++        *got_frame = 0;
++        if (ret == AX_ERR_VDEC_BUF_EMPTY)
++            ret = AX_SUCCESS;
++    }
++
++    if ((!avpkt->size) && (!avpkt->data))
++        s->bEof = AX_TRUE;
++
++ERR_RET:
++    return ret;
++}
++
++const AVCodecHWConfigInternal *ff_h2645_axdec_hw_configs[] = {
++    &(const AVCodecHWConfigInternal) {
++        .public = {
++            .pix_fmt     = AV_PIX_FMT_AXMM,
++            .methods     = AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX |
++                           AV_CODEC_HW_CONFIG_METHOD_INTERNAL,
++            .device_type = AV_HWDEVICE_TYPE_AXMM
++        },
++        .hwaccel = NULL,
++    },
++    NULL
++};
++
++#define OFFSET(x) offsetof(AXVdecContext, x)
++#define VD AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_DECODING_PARAM
++#define MAX_CARD_NUM 256
++
++static const AVOption hevc_options[] = {
++    { "resize",   "Resize (width)x(height)", OFFSET(resize_expr), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, VD },
++    { "d", "device index from 0 to connected device num - 1, default, 0, range(0, AXCL_MAX_DEVICE_COUNT - 1)", OFFSET(device_index), AV_OPT_TYPE_STRING, {  .str = NULL  }, 0, MAX_CARD_NUM, VD },
++    { "fmt", "Decoder output format (software format of hardware frames)", OFFSET(out_fmt_string), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, VD  },
++    { NULL }
++};
++
++static const AVClass hevc_axdec_class = {
++    .class_name = "hevc_axdec",
++    .item_name  = av_default_item_name,
++    .option     = hevc_options,
++    .version    = LIBAVUTIL_VERSION_INT,
++};
++
++const FFCodec ff_hevc_ax_decoder = {
++    .p.name           = "hevc_axdec",
++    CODEC_LONG_NAME("AXERA HEVC DECODER"),
++    .priv_data_size = sizeof(AXVdecContext),
++    .p.type           = AVMEDIA_TYPE_VIDEO,
++    .p.id             = AV_CODEC_ID_HEVC,
++    .init           = ax_decode_init,
++    FF_CODEC_DECODE_CB(ax_decode_frame),
++    .close          = ax_decode_close,
++    .p.capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HARDWARE,
++    .p.priv_class     = &hevc_axdec_class,
++    .p.pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_AXMM,
++                                                    AV_PIX_FMT_NV12,
++                                                    AV_PIX_FMT_YUV420P,
++                                                    AV_PIX_FMT_NV21,
++                                                    AV_PIX_FMT_P010,
++                                                    AV_PIX_FMT_NONE },
++    .hw_configs     = ff_h2645_axdec_hw_configs,
++    .bsfs           = "hevc_mp4toannexb",
++    .p.wrapper_name   = "hevc_axdec",
++};
++
++static const AVOption options[] = {
++    { "resize",   "Resize (width)x(height)", OFFSET(resize_expr), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, VD },
++    { "d", "device index from 0 to connected device num - 1, default, 0, range(0, AXCL_MAX_DEVICE_COUNT - 1)", OFFSET(device_index), AV_OPT_TYPE_STRING, { .str = NULL }, 0, MAX_CARD_NUM, VD },
++    { "fmt", "Decoder output format (software format of hardware frames)", OFFSET(out_fmt_string), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, VD  },
++    { NULL }
++};
++
++static const AVClass h264_axdec_class = {
++    .class_name = "h264_axdec",
++    .item_name  = av_default_item_name,
++    .option     = options,
++    .version    = LIBAVUTIL_VERSION_INT,
++};
++
++const FFCodec ff_h264_ax_decoder = {
++    .p.name           = "h264_axdec",
++    CODEC_LONG_NAME("AXERA H264 DECODER"),
++    .priv_data_size = sizeof(AXVdecContext),
++    .p.type           = AVMEDIA_TYPE_VIDEO,
++    .p.id             = AV_CODEC_ID_H264,
++    .init           = ax_decode_init,
++    FF_CODEC_DECODE_CB(ax_decode_frame),
++    .close          = ax_decode_close,
++    .p.capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HARDWARE,
++    .p.priv_class     = &h264_axdec_class,
++    .p.pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_AXMM,
++                                                    AV_PIX_FMT_NV12,
++                                                    AV_PIX_FMT_NV21,
++                                                    AV_PIX_FMT_YUV420P,
++                                                    AV_PIX_FMT_P010,
++                                                    AV_PIX_FMT_NONE },
++    .hw_configs     = ff_h2645_axdec_hw_configs,
++    .bsfs           = "h264_mp4toannexb",
++    .p.wrapper_name   = "h264_axdec",
++};
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/axvenc.c b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/axvenc.c
+new file mode 100644
+index 00000000..790e5ddc
+--- /dev/null
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/axvenc.c
+@@ -0,0 +1,511 @@
++/*
++ * This file is part of FFmpeg.
++ *
++ * FFmpeg is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * FFmpeg is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with FFmpeg; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++ */
++
++#include <unistd.h>
++
++#if defined(WIN32)
++#include <windows.h>
++#else
++#include <dlfcn.h>
++#endif
++
++#include "libavutil/hwcontext.h"
++#include "libavutil/internal.h"
++#include "libavutil/hwcontext_axmm.h"
++
++#include "internal.h"
++#include "encode.h"
++
++#include "axvenc.h"
++
++#define OFFSET(x) offsetof(AXVencContext, x)
++
++#define CHECK_WITH_RET(cond, ret) \
++    do { \
++        if ((cond) != 0) { \
++            av_log(NULL, AV_LOG_ERROR, "check %s failed\n", #cond); \
++            return (ret); \
++        } \
++    } while (0)
++
++#if defined(WIN32)
++#define LIB_NAME     "libaxcl_venc.dll"
++#define LIB_RT_NAME  "libaxcl_rt.dll"
++
++#define SAFE_FREE_LIBRARY(h) if (h) { FreeLibrary(h); h = NULL; }
++#else
++#define LIB_NAME     "libaxcl_venc.so"
++#define LIB_RT_NAME  "libaxcl_rt.so"
++
++#define SAFE_FREE_LIBRARY(h) if (h) { dlclose(h); h = NULL; }
++#endif
++
++static int axenc_device_dl(AXVencDlFuncs *dl_funcs)
++{
++#if defined(WIN32)
++    dl_funcs->lib = LoadLibraryA(LIB_NAME);
++    CHECK_WITH_RET(!dl_funcs->lib, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_init = (pFnAXCL_VENC_Init)GetProcAddress(dl_funcs->lib, "AXCL_VENC_Init");
++    CHECK_WITH_RET(!dl_funcs->venc_init, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_deinit = (pFnAXCL_VENC_Deinit)GetProcAddress(dl_funcs->lib, "AXCL_VENC_Deinit");
++    CHECK_WITH_RET(!dl_funcs->venc_deinit, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_create_chn_ex = (pFnAXCL_VENC_CreateChnEx)GetProcAddress(dl_funcs->lib, "AXCL_VENC_CreateChnEx");
++    CHECK_WITH_RET(!dl_funcs->venc_create_chn_ex, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_destroy_chn = (pFnAXCL_VENC_DestroyChn)GetProcAddress(dl_funcs->lib, "AXCL_VENC_DestroyChn");
++    CHECK_WITH_RET(!dl_funcs->venc_destroy_chn, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_reset_chn = (pFnAXCL_VENC_ResetChn)GetProcAddress(dl_funcs->lib, "AXCL_VENC_ResetChn");
++    CHECK_WITH_RET(!dl_funcs->venc_reset_chn, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_set_chn_attr = (pFnAXCL_VENC_SetChnAttr)GetProcAddress(dl_funcs->lib, "AXCL_VENC_SetChnAttr");
++    CHECK_WITH_RET(!dl_funcs->venc_set_chn_attr, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_get_chn_attr = (pFnAXCL_VENC_GetChnAttr)GetProcAddress(dl_funcs->lib, "AXCL_VENC_GetChnAttr");
++    CHECK_WITH_RET(!dl_funcs->venc_get_chn_attr, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_start_recv_frame = (pFnAXCL_VENC_StartRecvFrame)GetProcAddress(dl_funcs->lib, "AXCL_VENC_StartRecvFrame");
++    CHECK_WITH_RET(!dl_funcs->venc_start_recv_frame, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_stop_recv_frame = (pFnAXCL_VENC_StopRecvFrame)GetProcAddress(dl_funcs->lib, "AXCL_VENC_StopRecvFrame");
++    CHECK_WITH_RET(!dl_funcs->venc_stop_recv_frame, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_send_frame = (pFnAXCL_VENC_SendFrame)GetProcAddress(dl_funcs->lib, "AXCL_VENC_SendFrame");
++    CHECK_WITH_RET(!dl_funcs->venc_send_frame, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_get_stream = (pFnAXCL_VENC_GetStream)GetProcAddress(dl_funcs->lib, "AXCL_VENC_GetStream");
++    CHECK_WITH_RET(!dl_funcs->venc_get_stream, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_release_stream = (pFnAXCL_VENC_ReleaseStream)GetProcAddress(dl_funcs->lib, "AXCL_VENC_ReleaseStream");
++    CHECK_WITH_RET(!dl_funcs->venc_release_stream, AVERROR_EXTERNAL);
++
++    dl_funcs->lib_rt = LoadLibraryA(LIB_RT_NAME);
++    CHECK_WITH_RET(!dl_funcs->lib, AVERROR_EXTERNAL);
++
++    dl_funcs->rt_memcpy = (pFnaxclrtMemcpy)GetProcAddress(dl_funcs->lib_rt, "axclrtMemcpy");
++    CHECK_WITH_RET(!dl_funcs->venc_release_stream, AVERROR_EXTERNAL);
++
++#else // !defined(WIN32)
++
++    dl_funcs->lib = dlopen(LIB_NAME, RTLD_NOW | RTLD_GLOBAL);
++    CHECK_WITH_RET(!dl_funcs->lib, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_init = dlsym(dl_funcs->lib, "AXCL_VENC_Init");
++    CHECK_WITH_RET(!dl_funcs->venc_init, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_deinit = dlsym(dl_funcs->lib, "AXCL_VENC_Deinit");
++    CHECK_WITH_RET(!dl_funcs->venc_deinit, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_create_chn_ex = dlsym(dl_funcs->lib, "AXCL_VENC_CreateChnEx");
++    CHECK_WITH_RET(!dl_funcs->venc_create_chn_ex, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_destroy_chn = dlsym(dl_funcs->lib, "AXCL_VENC_DestroyChn");
++    CHECK_WITH_RET(!dl_funcs->venc_destroy_chn, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_reset_chn = dlsym(dl_funcs->lib, "AXCL_VENC_ResetChn");
++    CHECK_WITH_RET(!dl_funcs->venc_reset_chn, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_set_chn_attr = dlsym(dl_funcs->lib, "AXCL_VENC_SetChnAttr");
++    CHECK_WITH_RET(!dl_funcs->venc_set_chn_attr, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_get_chn_attr = dlsym(dl_funcs->lib, "AXCL_VENC_GetChnAttr");
++    CHECK_WITH_RET(!dl_funcs->venc_get_chn_attr, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_start_recv_frame = dlsym(dl_funcs->lib, "AXCL_VENC_StartRecvFrame");
++    CHECK_WITH_RET(!dl_funcs->venc_start_recv_frame, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_stop_recv_frame = dlsym(dl_funcs->lib, "AXCL_VENC_StopRecvFrame");
++    CHECK_WITH_RET(!dl_funcs->venc_stop_recv_frame, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_send_frame = dlsym(dl_funcs->lib, "AXCL_VENC_SendFrame");
++    CHECK_WITH_RET(!dl_funcs->venc_send_frame, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_get_stream = dlsym(dl_funcs->lib, "AXCL_VENC_GetStream");
++    CHECK_WITH_RET(!dl_funcs->venc_get_stream, AVERROR_EXTERNAL);
++
++    dl_funcs->venc_release_stream = dlsym(dl_funcs->lib, "AXCL_VENC_ReleaseStream");
++    CHECK_WITH_RET(!dl_funcs->venc_release_stream, AVERROR_EXTERNAL);
++
++    dl_funcs->lib_rt = dlopen(LIB_RT_NAME, RTLD_NOW | RTLD_GLOBAL);
++    CHECK_WITH_RET(!dl_funcs->lib, AVERROR_EXTERNAL);
++
++    dl_funcs->rt_memcpy = dlsym(dl_funcs->lib_rt, "axclrtMemcpy");
++    CHECK_WITH_RET(!dl_funcs->venc_release_stream, AVERROR_EXTERNAL);
++
++#endif // !defined(WIN32)
++    return 0;
++}
++
++static int venc_attr_init(AVCodecContext *ctx)
++{
++    AXVencContext *vctx = ctx->priv_data;
++    AX_VENC_MOD_ATTR_T *mod_attr = &vctx->mod_attr;
++    AX_VENC_CHN_ATTR_T *chn_attr = &vctx->chn_attr;
++
++    mod_attr->enVencType = AX_VENC_MULTI_ENCODER;
++    mod_attr->stModThdAttr.u32TotalThreadNum = 1;
++    mod_attr->stModThdAttr.bExplicitSched = AX_FALSE;
++
++    chn_attr->stVencAttr.u32PicWidthSrc = ctx->width;
++    chn_attr->stVencAttr.u32PicHeightSrc = ctx->height;
++    chn_attr->stVencAttr.u32MaxPicWidth = ctx->width;
++    chn_attr->stVencAttr.u32MaxPicHeight = ctx->height;
++    chn_attr->stVencAttr.enLinkMode = AX_VENC_UNLINK_MODE;
++    chn_attr->stVencAttr.u8InFifoDepth = 3;
++    chn_attr->stVencAttr.u8OutFifoDepth = 3;
++    chn_attr->stVencAttr.u32BufSize = 0;
++
++    chn_attr->stRcAttr.stFrameRate.fSrcFrameRate = (AX_F32)(ctx->framerate.num / ctx->framerate.den);
++    chn_attr->stRcAttr.stFrameRate.fDstFrameRate = chn_attr->stRcAttr.stFrameRate.fSrcFrameRate;
++
++    chn_attr->stGopAttr.enGopMode = AX_VENC_GOPMODE_NORMALP;
++
++    vctx->recv_param.s32RecvPicNum = -1;
++
++    if (vctx->attr_init)
++        return vctx->attr_init(ctx);
++
++    return 0;
++}
++
++static inline int venc_device_context_init(AVHWDeviceContext *device_ctx)
++{
++    int ret;
++    axclrtContext context;
++    AXMMDeviceContext *hwdc_priv = device_ctx->hwctx;
++
++    ret = hwdc_priv->rtdev_funcs.rt_get_current_context(&context);
++    if (ret == AXCL_ERR_CONTEXT_NO_BIND_CONTEXT)
++        ret = hwdc_priv->rtdev_funcs.rt_create_context(&context, hwdc_priv->devid);
++
++    if (ret) {
++        av_log(device_ctx, AV_LOG_ERROR, "%s failed to init device%d context, ret = 0x%x\n", __func__,
++               hwdc_priv->devid, ret);
++        ret = AVERROR_EXTERNAL;
++    }
++
++    return ret;
++}
++
++static int hwframe_ctx_init(AVCodecContext *ctx)
++{
++    int ret;
++    AXVencContext *vctx = ctx->priv_data;
++    AVBufferRef *hw_frames_ref;
++    AVHWFramesContext *frames_ctx;
++
++    if ((ctx->pix_fmt != AV_PIX_FMT_AXMM) && (ctx->hw_device_ctx && !ctx->hw_frames_ctx)) {
++        hw_frames_ref = av_hwframe_ctx_alloc(ctx->hw_device_ctx);
++        if (!hw_frames_ref) {
++            av_log(ctx, AV_LOG_ERROR, "%s failed to alloc hwframe context\n", __func__);
++            return AVERROR(ENOMEM);
++        }
++
++        frames_ctx = (AVHWFramesContext *)(hw_frames_ref->data);
++        frames_ctx->format = AV_PIX_FMT_AXMM;
++        frames_ctx->sw_format = ctx->pix_fmt;
++        frames_ctx->width = ctx->width;
++        frames_ctx->height = ctx->height;
++        frames_ctx->initial_pool_size = vctx->chn_attr.stVencAttr.u8InFifoDepth + 2;
++
++        ret = av_hwframe_ctx_init(hw_frames_ref);
++        if (ret) {
++            av_log(ctx, AV_LOG_ERROR, "%s failed to init hwframe context\n", __func__);
++            av_buffer_unref(&hw_frames_ref);
++            return ret;
++        }
++
++        ctx->hw_frames_ctx = av_buffer_ref(hw_frames_ref);
++        av_buffer_unref(&hw_frames_ref);
++        if (!ctx->hw_frames_ctx)
++            return AVERROR(ENOMEM);
++
++        vctx->hw_frame = av_frame_alloc();
++        if (!vctx->hw_frame)
++            return AVERROR(ENOMEM);
++
++        av_log(ctx, AV_LOG_VERBOSE, "%s hwframe context init success\n", __func__);
++    }
++
++    return 0;
++}
++
++int ff_axvenc_init(AVCodecContext *ctx)
++{
++    int ret;
++    AXVencContext *vctx = ctx->priv_data;
++    AVHWDeviceContext *device_ctx;
++
++    ret = axenc_device_dl(&vctx->dl_funcs);
++    if (ret)
++        goto err0;
++
++    vctx->buffer_frame = av_frame_alloc();
++    if (!vctx->buffer_frame) {
++        ret = AVERROR(ENOMEM);
++        goto err0;
++    }
++
++    ret = venc_attr_init(ctx);
++    if (ret)
++        goto err0;
++
++    device_ctx = (AVHWDeviceContext*)ctx->hw_device_ctx->data;
++    ret = venc_device_context_init(device_ctx);
++    if (ret) {
++        av_log(ctx, AV_LOG_ERROR, "%s device context init failed ret:0x%x\n", __func__, ret);
++        goto err0;
++    }
++
++    ret = vctx->dl_funcs.venc_init(&vctx->mod_attr);
++    if (ret) {
++        av_log(ctx, AV_LOG_ERROR, "%s failed to init venc, ret:0x%x\n", __func__, ret);
++        ret = AVERROR_EXTERNAL;
++        goto err0;
++    }
++
++    ret = vctx->dl_funcs.venc_create_chn_ex(&vctx->chn, &vctx->chn_attr);
++    if (ret) {
++        av_log(ctx, AV_LOG_ERROR, "%s failed to create venc chn, ret:0x%x\n", __func__, ret);
++        ret = AVERROR_EXTERNAL;
++        goto err1;
++    }
++
++    ret = vctx->dl_funcs.venc_start_recv_frame(vctx->chn, &vctx->recv_param);
++    if (ret) {
++        av_log(ctx, AV_LOG_ERROR, "%s failed to start venc chn%d, ret:0x%x\n", __func__, vctx->chn, ret);
++        ret = AVERROR_EXTERNAL;
++        goto err2;
++    }
++
++    ret = hwframe_ctx_init(ctx);
++    if (ret)
++        goto err3;
++
++    av_log(ctx, AV_LOG_INFO, "%s create and start venc chn%d success\n", __func__, vctx->chn);
++
++    return 0;
++
++err3:
++    vctx->dl_funcs.venc_stop_recv_frame(vctx->chn);
++err2:
++    vctx->dl_funcs.venc_destroy_chn(vctx->chn);
++err1:
++    vctx->dl_funcs.venc_deinit();
++err0:
++    SAFE_FREE_LIBRARY(vctx->dl_funcs.lib);
++    SAFE_FREE_LIBRARY(vctx->dl_funcs.lib_rt);
++
++    if (vctx->buffer_frame)
++        av_frame_free(&vctx->buffer_frame);
++
++    av_log(ctx, AV_LOG_ERROR, "%s failed, ret = %x\n", __func__, ret);
++
++    return ret;
++}
++
++int ff_axvenc_receive_packet(AVCodecContext *ctx, AVPacket *pkt)
++{
++    int ret = 0, timeout = 0;
++    AXVencContext *vctx = ctx->priv_data;
++    AVFrame *frame = vctx->buffer_frame;
++    AVFrame *hw_frame = vctx->hw_frame;
++    AX_VIDEO_FRAME_INFO_T *frame_internal = &vctx->frame_internal;
++    AX_VENC_STREAM_T *stream = &vctx->stream;
++    AVHWDeviceContext *device_ctx = (AVHWDeviceContext*)ctx->hw_device_ctx->data;
++
++    ret = venc_device_context_init(device_ctx);
++    if (ret) {
++        av_log(ctx, AV_LOG_ERROR, "%s device context init failed ret:0x%x\n", __func__, ret);
++        return ret;
++    }
++
++    if (!frame->buf[0]) {
++        ret = ff_encode_get_frame(ctx, frame);
++        if ((ret == AVERROR_EOF) || (ret == AVERROR(EAGAIN))) {
++            if (!hw_frame || !hw_frame->buf[0]) {
++                frame = NULL;
++                timeout = (ret == AVERROR_EOF) ? 200 : 0;
++            } else {
++                frame = hw_frame;
++            }
++        }
++    }
++
++    if (frame) {
++        if (frame->format != AV_PIX_FMT_AXMM) {
++            if (!ctx->hw_frames_ctx || !hw_frame) {
++                av_log(ctx, AV_LOG_ERROR, "%s frame format(%x) invalid\n", __func__, frame->format);
++                return AVERROR_BUG;
++            }
++
++            if (!hw_frame->buf[0]) {
++                ret = av_hwframe_get_buffer(ctx->hw_frames_ctx, hw_frame, 0);
++                if (!ret) {
++                    ret = av_hwframe_transfer_data(hw_frame, frame, 0);
++                    if (ret)
++                        return ret;
++
++                    av_frame_unref(frame);
++                    frame = hw_frame;
++                } else {
++                    ret = AVERROR(EAGAIN);
++                }
++            } else {
++                frame = hw_frame;
++            }
++        }
++
++        if (frame->data[4]) {
++            memcpy(&frame_internal->stVFrame, frame->data[4], sizeof(frame_internal->stVFrame));
++        } else if (frame->data[3]) {
++            memcpy(&frame_internal->stVFrame, frame->data[3], sizeof(frame_internal->stVFrame));
++        } else {
++            av_log(ctx, AV_LOG_ERROR, "%s frame data invalid\n", __func__);
++            return AVERROR_BUG;
++        }
++
++#if 0
++        switch (frame->format)
++        {
++        case AV_PIX_FMT_YUV420P:
++            frame_internal->stVFrame.enImgFormat = AX_FORMAT_YUV420_PLANAR;
++            break;
++        case AV_PIX_FMT_NV12:
++            frame_internal->stVFrame.enImgFormat = AX_FORMAT_YUV420_SEMIPLANAR;
++            break;
++        case AV_PIX_FMT_NV21:
++            frame_internal->stVFrame.enImgFormat = AX_FORMAT_YUV420_SEMIPLANAR_VU;
++            break;
++        case AV_PIX_FMT_YUYV422:
++            frame_internal->stVFrame.enImgFormat = AX_FORMAT_YUV422_INTERLEAVED_YUYV;
++            break;
++        case AV_PIX_FMT_YVYU422:
++            frame_internal->stVFrame.enImgFormat = AX_FORMAT_YUV422_INTERLEAVED_UYVY;
++            break;
++        default:
++            av_log(ctx, AV_LOG_ERROR, "%s unknown image format(%d).\n", __func__, frame->format);
++            return AVERROR_EXTERNAL;
++        }
++#endif
++        ret = vctx->dl_funcs.venc_send_frame(vctx->chn, frame_internal, 0);
++        if (ret == AX_SUCCESS) {
++            av_log(ctx, AV_LOG_VERBOSE, "%s send frame to venc chn%d success\n", __func__, vctx->chn);
++            av_frame_unref(frame);
++        } else if (ret == AX_ERR_VENC_QUEUE_FULL) {
++            av_log(ctx, AV_LOG_VERBOSE, "%s venc chn%d input queue full, try again!!\n", __func__, vctx->chn);
++            timeout = -1;
++        } else {
++            av_log(ctx, AV_LOG_ERROR, "%s send frame to venc chn%d failed, ret:0x%x\n", __func__, vctx->chn, ret);
++            return AVERROR_EXTERNAL;
++        }
++    }
++
++    memset(stream, 0, sizeof(*stream));
++    ret = vctx->dl_funcs.venc_get_stream(vctx->chn, stream, timeout);
++    if (ret == AX_SUCCESS) {
++        av_log(ctx, AV_LOG_VERBOSE, "%s get stream{len:%u, type:%d, seq:%lld, pts:%lld} from venc chn%d success\n", __func__,
++               stream->stPack.u32Len, stream->stPack.enCodingType,
++               stream->stPack.u64SeqNum, stream->stPack.u64PTS,
++               vctx->chn);
++        if (stream->stPack.u32Len) {
++            ret = av_new_packet(pkt, stream->stPack.u32Len);
++            if (!ret) {
++                ret = vctx->dl_funcs.rt_memcpy(pkt->data, (void *)stream->stPack.ulPhyAddr,
++                                               stream->stPack.u32Len,
++                                               AXCL_MEMCPY_DEVICE_TO_HOST);
++                if (ret) {
++                    av_log(ctx, AV_LOG_ERROR, "%s failed to copy data:%lld to 0x%p on venc chn%d\n", __func__,
++                           stream->stPack.ulPhyAddr, pkt->data, vctx->chn);
++                    ret = AVERROR_EXTERNAL;
++                }
++            }
++        }
++        if (vctx->dl_funcs.venc_release_stream(vctx->chn, stream))
++            av_log(ctx, AV_LOG_ERROR, "%s failed to release frame to venc chn%d\n", __func__, vctx->chn);
++    } else if (ret == AX_ERR_VENC_QUEUE_EMPTY) {
++        av_log(ctx, AV_LOG_VERBOSE, "%s venc chn%d output queue empty, try again!!\n", __func__, vctx->chn);
++        ret = (timeout > 0) ? AVERROR_EOF : AVERROR(EAGAIN);
++    } else {
++        av_log(ctx, AV_LOG_ERROR, "%s failed to get stream from venc chn%d, ret:0x%x\n", __func__, vctx->chn, ret);
++        return AVERROR_EXTERNAL;
++    }
++
++    return ret;
++}
++
++int ff_axvenc_close(AVCodecContext *ctx)
++{
++    int ret;
++    AXVencContext *vctx = ctx->priv_data;
++
++    ret = vctx->dl_funcs.venc_stop_recv_frame(vctx->chn);
++    if (ret) {
++        av_log(ctx, AV_LOG_ERROR, "%s failed to stop venc chn%d, ret = 0x%x\n", __func__, vctx->chn, ret);
++        goto exit;
++    }
++
++    ret = vctx->dl_funcs.venc_reset_chn(vctx->chn);
++    if (ret) {
++        av_log(ctx, AV_LOG_ERROR, "%s failed to reset venc chn%d, ret = 0x%x\n", __func__, vctx->chn, ret);
++        goto exit;
++    }
++
++    ret = vctx->dl_funcs.venc_destroy_chn(vctx->chn);
++    if (ret) {
++        av_log(ctx, AV_LOG_ERROR, "%s failed to destroy venc chn%d, ret = 0x%x\n", __func__, vctx->chn, ret);
++        goto exit;
++    }
++
++    ret = vctx->dl_funcs.venc_deinit();
++    if (ret) {
++        av_log(ctx, AV_LOG_ERROR, "%s failed to deinit venc, ret = 0x%x\n", __func__, ret);
++        goto exit;
++    }
++
++    av_frame_free(&vctx->buffer_frame);
++    av_frame_free(&vctx->hw_frame);
++
++    SAFE_FREE_LIBRARY(vctx->dl_funcs.lib);
++    SAFE_FREE_LIBRARY(vctx->dl_funcs.lib_rt);
++
++exit:
++    ret = ret ? AVERROR_EXTERNAL : 0;
++
++    av_log(ctx, AV_LOG_VERBOSE, "%s %s\n", __func__, ret ? "failed" : "success");
++
++    return ret;
++}
++
++void ff_axvenc_flush(AVCodecContext *ctx)
++{
++    int ret;
++    AXVencContext *vctx = ctx->priv_data;
++
++    ret = vctx->dl_funcs.venc_reset_chn(vctx->chn);
++    if (ret)
++        av_log(ctx, AV_LOG_ERROR, "%s failed to reset venc chn%d, ret = 0x%x\n", __func__, vctx->chn, ret);
++
++    av_frame_unref(vctx->buffer_frame);
++    av_frame_unref(vctx->hw_frame);
++
++    av_log(ctx, AV_LOG_VERBOSE, "%s done\n", __func__);
++}
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/axvenc.h b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/axvenc.h
+new file mode 100644
+index 00000000..d585afc2
+--- /dev/null
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/axvenc.h
+@@ -0,0 +1,120 @@
++/*
++ * This file is part of FFmpeg.
++ *
++ * FFmpeg is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * FFmpeg is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with FFmpeg; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++ */
++
++#ifndef AVCODEC_AXVENC_H
++#define AVCODEC_AXVENC_H
++
++#if defined(WIN32)
++#include <windows.h>
++#endif
++
++#include "config.h"
++
++#include "libavutil/opt.h"
++#include "hwconfig.h"
++
++#include "avcodec.h"
++
++#include "axcl.h"
++
++typedef axclError (*pFnaxclrtMemcpy)(void *dstPtr, const void *srcPtr, size_t count, axclrtMemcpyKind kind);
++
++typedef AX_S32 (*pFnAXCL_VENC_Init)(const AX_VENC_MOD_ATTR_T *pstModAttr);
++typedef AX_S32 (*pFnAXCL_VENC_Deinit)();
++typedef AX_S32 (*pFnAXCL_VENC_CreateChnEx)(VENC_CHN *pVeChn, const AX_VENC_CHN_ATTR_T *pstAttr);
++typedef AX_S32 (*pFnAXCL_VENC_DestroyChn)(VENC_CHN VeChn);
++typedef AX_S32 (*pFnAXCL_VENC_ResetChn)(VENC_CHN VeChn);
++typedef AX_S32 (*pFnAXCL_VENC_SetChnAttr)(VENC_CHN VeChn, const AX_VENC_CHN_ATTR_T *pstChnAttr);
++typedef AX_S32 (*pFnAXCL_VENC_GetChnAttr)(VENC_CHN VeChn, AX_VENC_CHN_ATTR_T *pstChnAttr);
++typedef AX_S32 (*pFnAXCL_VENC_StartRecvFrame)(VENC_CHN VeChn, const AX_VENC_RECV_PIC_PARAM_T *pstRecvParam);
++typedef AX_S32 (*pFnAXCL_VENC_StopRecvFrame)(VENC_CHN VeChn);
++typedef AX_S32 (*pFnAXCL_VENC_SendFrame)(VENC_CHN VeChn, const AX_VIDEO_FRAME_INFO_T *pstFrame, AX_S32 s32MilliSec);
++typedef AX_S32 (*pFnAXCL_VENC_GetStream)(VENC_CHN VeChn, AX_VENC_STREAM_T *pstStream, AX_S32 s32MilliSec);
++typedef AX_S32 (*pFnAXCL_VENC_ReleaseStream)(VENC_CHN VeChn, const AX_VENC_STREAM_T *pstStream);
++
++typedef struct {
++#if defined(WIN32)
++    HMODULE lib;
++#else
++    void *lib;
++#endif
++    pFnAXCL_VENC_Init venc_init;
++    pFnAXCL_VENC_Deinit venc_deinit;
++    pFnAXCL_VENC_CreateChnEx venc_create_chn_ex;
++    pFnAXCL_VENC_DestroyChn venc_destroy_chn;
++    pFnAXCL_VENC_ResetChn venc_reset_chn;
++    pFnAXCL_VENC_SetChnAttr venc_set_chn_attr;
++    pFnAXCL_VENC_GetChnAttr venc_get_chn_attr;
++    pFnAXCL_VENC_StartRecvFrame venc_start_recv_frame;
++    pFnAXCL_VENC_StopRecvFrame venc_stop_recv_frame;
++    pFnAXCL_VENC_SendFrame venc_send_frame;
++    pFnAXCL_VENC_GetStream venc_get_stream;
++    pFnAXCL_VENC_ReleaseStream venc_release_stream;
++
++#if defined(WIN32)
++    HMODULE lib_rt;
++#else
++    void *lib_rt;
++#endif
++    pFnaxclrtMemcpy rt_memcpy;
++} AXVencDlFuncs;
++
++typedef struct {
++    const AVClass *class;
++
++    VENC_CHN chn;
++    AX_VENC_MOD_ATTR_T mod_attr;
++    AX_VENC_CHN_ATTR_T chn_attr;
++    AX_VENC_RECV_PIC_PARAM_T recv_param;
++    AX_VIDEO_FRAME_INFO_T frame_internal;
++    AX_VENC_STREAM_T stream;
++
++    AXVencDlFuncs dl_funcs;
++
++    int (*attr_init)(AVCodecContext *ctx);
++
++    int profile;
++    int level;
++    int rc;
++    int i_qmin;
++    int i_qmax;
++
++    int intraQpDelta; /* Range:[-51, 51]; QP difference between target QP and intra frame QP */
++    int idrQpDeltaRange; /* Range:[2, 10]; QP rang between CU QP and I frame QP */
++    int maxIprop; /* Range:[1, 100]; the max I P size ratio */
++    int minIprop; /* Range:[1, u32MaxIprop]; the min I P size ratio */
++    unsigned int changePos;              /* Range:[20, 100] */
++    AX_VENC_VBR_QUALITY_LEVEL_E enVQ; /* def AX_VENC_VBR_QUALITY_LEVEL_INV */
++    unsigned int minStillPercent;        /* Range:[10, 100] */
++    unsigned int maxStillQp;             /* Range:[u32MinIQp, u32MaxIQp]; def 36 */
++    /**
++     * Range[-1, 51]; Start QP value of the first frame
++     * -1: Encoder calculates initial QP.
++     */
++    int firstFrameStartQp;
++
++    AVFrame *buffer_frame;
++    AVFrame *hw_frame;
++} AXVencContext;
++
++int ff_axvenc_init(AVCodecContext *ctx);
++int ff_axvenc_receive_packet(AVCodecContext *ctx, AVPacket *pkt);
++int ff_axvenc_close(AVCodecContext *ctx);
++void ff_axvenc_flush(AVCodecContext *ctx);
++
++#endif /* AVCODEC_AXVENC_H */
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/h264_axenc.c b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/h264_axenc.c
+new file mode 100644
+index 00000000..1548610e
+--- /dev/null
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/h264_axenc.c
+@@ -0,0 +1,288 @@
++/*
++ * This file is part of FFmpeg.
++ *
++ * FFmpeg is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * FFmpeg is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with FFmpeg; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++ */
++
++#include <unistd.h>
++
++#include "libavutil/pixfmt.h"
++#include "libavutil/pixdesc.h"
++#include "libavutil/hwcontext.h"
++#include "libavutil/internal.h"
++#include "libavutil/hwcontext_axmm.h"
++
++#include "avcodec.h"
++#include "codec_internal.h"
++#include "encode.h"
++
++#include "axvenc.h"
++
++#define OFFSET(x) offsetof(AXVencContext, x)
++#define VE AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_ENCODING_PARAM
++
++static int h264_enc_attr_init(AVCodecContext *ctx)
++{
++    int qmin, qmax, i_qmin, i_qmax;
++    AXVencContext *vctx = ctx->priv_data;
++    AX_VENC_CHN_ATTR_T *chn_attr = &vctx->chn_attr;
++
++    chn_attr->stVencAttr.enType = PT_H264;
++
++    if (ctx->profile == FF_PROFILE_UNKNOWN)
++        ctx->profile = vctx->profile;
++    if (ctx->level == FF_LEVEL_UNKNOWN)
++        ctx->level = vctx->level;
++
++    switch (ctx->profile) {
++    case FF_PROFILE_UNKNOWN:
++        av_log(ctx, AV_LOG_INFO, "use h.264 main profile as the default\n");
++        chn_attr->stVencAttr.enProfile = AX_VENC_H264_MAIN_PROFILE;
++        break;
++    case FF_PROFILE_H264_BASELINE:
++        chn_attr->stVencAttr.enProfile = AX_VENC_H264_BASE_PROFILE;
++        chn_attr->stVencAttr.enLevel = AX_VENC_H264_LEVEL_3_1;
++        break;
++    case FF_PROFILE_H264_MAIN:
++        chn_attr->stVencAttr.enProfile = AX_VENC_H264_MAIN_PROFILE;
++        break;
++    case FF_PROFILE_H264_HIGH:
++        chn_attr->stVencAttr.enProfile = AX_VENC_H264_HIGH_PROFILE;
++        break;
++    case FF_PROFILE_H264_HIGH_10:
++        chn_attr->stVencAttr.enProfile = AX_VENC_H264_HIGH_10_PROFILE;
++        break;
++    default:
++        av_log(ctx, AV_LOG_ERROR, "H.264 profile(%d) is not supported\n", ctx->profile);
++        return AVERROR_PATCHWELCOME;
++    }
++
++    chn_attr->stVencAttr.enLevel = ctx->level;
++
++    if ((ctx->level == FF_LEVEL_UNKNOWN) && (ctx->profile == FF_PROFILE_H264_BASELINE))
++        chn_attr->stVencAttr.enLevel = AX_VENC_H264_LEVEL_5_1;
++
++    chn_attr->stVencAttr.enStrmBitDepth = AX_VENC_STREAM_BIT_8;
++
++    qmin = ctx->qmin > 51 ? 51 : ctx->qmin;
++    qmax = ctx->qmax > 51 ? 51 : ctx->qmax;
++    if (qmin > qmax)
++        qmin = qmax;
++
++    i_qmin = (vctx->i_qmin == 52) ? qmin : vctx->i_qmin;
++    i_qmax = (vctx->i_qmax == 52) ? qmax : vctx->i_qmax;
++    if (i_qmin > i_qmax)
++        i_qmin = i_qmax;
++
++    av_log(ctx, AV_LOG_INFO, "%s rc:%d, qp:[%d,%d], i_qp:[%d,%d], bitrate:%ld\n", __func__, vctx->rc,
++           qmin, qmax, i_qmin, i_qmax, ctx->bit_rate);
++
++    chn_attr->stRcAttr.enRcMode = vctx->rc;
++
++    switch (vctx->rc) {
++    case AX_VENC_RC_MODE_H264CBR:
++        chn_attr->stRcAttr.s32FirstFrameStartQp = vctx->firstFrameStartQp;
++        chn_attr->stRcAttr.stH264Cbr.u32Gop = ctx->gop_size;
++        chn_attr->stRcAttr.stH264Cbr.u32BitRate = (ctx->bit_rate >= 1000) ? (ctx->bit_rate + 500) / 1000 : 2000;
++        chn_attr->stRcAttr.stH264Cbr.u32MinQp = qmin;
++        chn_attr->stRcAttr.stH264Cbr.u32MaxQp = qmax;
++        chn_attr->stRcAttr.stH264Cbr.u32MinIQp = i_qmin;
++        chn_attr->stRcAttr.stH264Cbr.u32MaxIQp = i_qmax;
++        chn_attr->stRcAttr.stH264Cbr.s32IntraQpDelta = vctx->intraQpDelta;
++        chn_attr->stRcAttr.stH264Cbr.u32IdrQpDeltaRange = vctx->idrQpDeltaRange;
++        chn_attr->stRcAttr.stH264Cbr.u32MaxIprop = vctx->maxIprop;
++        chn_attr->stRcAttr.stH264Cbr.u32MinIprop = vctx->minIprop;
++        chn_attr->stRcAttr.stH264Cbr.stQpmapInfo.enQpmapQpType = AX_VENC_QPMAP_QP_DISABLE;
++        chn_attr->stRcAttr.stH264Cbr.stQpmapInfo.enQpmapBlockType = AX_VENC_QPMAP_BLOCK_DISABLE;
++        chn_attr->stRcAttr.stH264Cbr.stQpmapInfo.enQpmapBlockUnit = AX_VENC_QPMAP_BLOCK_UNIT_64x64;
++        chn_attr->stRcAttr.stH264Cbr.stQpmapInfo.enCtbRcMode = AX_VENC_RC_CTBRC_DISABLE;
++        break;
++    case AX_VENC_RC_MODE_H264VBR:
++        chn_attr->stRcAttr.s32FirstFrameStartQp = vctx->firstFrameStartQp;
++        chn_attr->stRcAttr.stH264Vbr.u32Gop = ctx->gop_size;
++        chn_attr->stRcAttr.stH264Vbr.u32MaxBitRate = (ctx->bit_rate >= 1000) ? (ctx->bit_rate + 500) / 1000 : 2000;
++        chn_attr->stRcAttr.stH264Vbr.u32MinQp = qmin;
++        chn_attr->stRcAttr.stH264Vbr.u32MaxQp = qmax;
++        chn_attr->stRcAttr.stH264Vbr.u32MinIQp = i_qmin;
++        chn_attr->stRcAttr.stH264Vbr.u32MaxIQp = i_qmax;
++        chn_attr->stRcAttr.stH264Vbr.s32IntraQpDelta = vctx->intraQpDelta;
++        chn_attr->stRcAttr.stH264Vbr.u32IdrQpDeltaRange =  vctx->idrQpDeltaRange;
++        chn_attr->stRcAttr.stH264Vbr.enVQ = vctx->enVQ;
++        chn_attr->stRcAttr.stH264Vbr.u32ChangePos = vctx->changePos;
++        chn_attr->stRcAttr.stH264Vbr.stQpmapInfo.enQpmapQpType = AX_VENC_QPMAP_QP_DISABLE;
++        chn_attr->stRcAttr.stH264Vbr.stQpmapInfo.enQpmapBlockType = AX_VENC_QPMAP_BLOCK_DISABLE;
++        chn_attr->stRcAttr.stH264Vbr.stQpmapInfo.enQpmapBlockUnit = AX_VENC_QPMAP_BLOCK_UNIT_64x64;
++        chn_attr->stRcAttr.stH264Vbr.stQpmapInfo.enCtbRcMode = AX_VENC_RC_CTBRC_DISABLE;
++        break;
++    case AX_VENC_RC_MODE_H264AVBR:
++        chn_attr->stRcAttr.s32FirstFrameStartQp = vctx->firstFrameStartQp;
++        chn_attr->stRcAttr.stH264AVbr.u32Gop = ctx->gop_size;
++        chn_attr->stRcAttr.stH264AVbr.u32MaxBitRate = (ctx->bit_rate >= 1000) ? (ctx->bit_rate + 500) / 1000 : 2000;
++        chn_attr->stRcAttr.stH264AVbr.u32MinQp = qmin;
++        chn_attr->stRcAttr.stH264AVbr.u32MaxQp = qmax;
++        chn_attr->stRcAttr.stH264AVbr.u32MinIQp = i_qmin;
++        chn_attr->stRcAttr.stH264AVbr.u32MaxIQp = i_qmax;
++        chn_attr->stRcAttr.stH264AVbr.s32IntraQpDelta = vctx->intraQpDelta;
++        chn_attr->stRcAttr.stH264AVbr.u32IdrQpDeltaRange = vctx->idrQpDeltaRange;
++        chn_attr->stRcAttr.stH264AVbr.u32ChangePos = vctx->changePos;
++        chn_attr->stRcAttr.stH264AVbr.u32MinStillPercent = vctx->minStillPercent;
++        chn_attr->stRcAttr.stH264AVbr.u32MaxStillQp = vctx->maxStillQp;
++        chn_attr->stRcAttr.stH264AVbr.stQpmapInfo.enQpmapQpType = AX_VENC_QPMAP_QP_DISABLE;
++        chn_attr->stRcAttr.stH264AVbr.stQpmapInfo.enQpmapBlockType = AX_VENC_QPMAP_BLOCK_DISABLE;
++        chn_attr->stRcAttr.stH264AVbr.stQpmapInfo.enQpmapBlockUnit = AX_VENC_QPMAP_BLOCK_UNIT_64x64;
++        chn_attr->stRcAttr.stH264AVbr.stQpmapInfo.enCtbRcMode = AX_VENC_RC_CTBRC_DISABLE;
++        break;
++    case AX_VENC_RC_MODE_H264FIXQP:
++        chn_attr->stRcAttr.s32FirstFrameStartQp = vctx->firstFrameStartQp;
++        chn_attr->stRcAttr.stH264FixQp.u32Gop = ctx->gop_size;
++        chn_attr->stRcAttr.stH264FixQp.u32IQp = i_qmax;
++        chn_attr->stRcAttr.stH264FixQp.u32PQp = qmax;
++        chn_attr->stRcAttr.stH264FixQp.u32BQp = 32;
++        break;
++    }
++
++    return 0;
++}
++
++static av_cold int ff_h264_axenc_init(AVCodecContext *ctx)
++{
++    AXVencContext *vctx = ctx->priv_data;
++
++    if ((ctx->pix_fmt != AV_PIX_FMT_AXMM) && (!ctx->hw_device_ctx || ctx->hw_frames_ctx)){
++        av_log(ctx, AV_LOG_ERROR, "%s format(%s) requires hw_device_ctx must be set\n", __func__,
++               av_get_pix_fmt_name(ctx->pix_fmt));
++        return AVERROR(EINVAL);
++    }
++
++    vctx->attr_init = h264_enc_attr_init;
++
++    return ff_axvenc_init(ctx);
++}
++
++static int ff_h264_axenc_receive_packet(AVCodecContext *ctx, AVPacket *pkt)
++{
++    return ff_axvenc_receive_packet(ctx, pkt);
++}
++
++static av_cold int ff_h264_axenc_close(AVCodecContext *ctx)
++{
++    return ff_axvenc_close(ctx);
++}
++
++static av_cold void ff_h264_axenc_flush(AVCodecContext *ctx)
++{
++    ff_axvenc_flush(ctx);
++}
++
++static const AVOption options[] = {
++    { "profile", "Set profile(support baseline, main and high)", OFFSET(profile), AV_OPT_TYPE_INT,
++      { .i64 = FF_PROFILE_H264_MAIN }, FF_PROFILE_H264_BASELINE, FF_PROFILE_H264_HIGH, VE, "profile" },
++
++#define PROFILE(name, value)  name, NULL, 0, AV_OPT_TYPE_CONST, { .i64 = value }, 0, 0, VE, "profile"
++    { PROFILE("baseline", FF_PROFILE_H264_BASELINE) },
++    { PROFILE("main",     FF_PROFILE_H264_MAIN) },
++    { PROFILE("high",     FF_PROFILE_H264_HIGH) },
++#undef PROFILE
++
++    { "level", "Set level", OFFSET(level), AV_OPT_TYPE_INT,
++      { .i64 = AX_VENC_H264_LEVEL_5_1 }, AX_VENC_H264_LEVEL_1, AX_VENC_H264_LEVEL_6_2, VE, "level" },
++
++#define LEVEL(name, value) name, NULL, 0, AV_OPT_TYPE_CONST, { .i64 = value }, 0, 0, VE, "level"
++    { LEVEL("1",   AX_VENC_H264_LEVEL_1) },
++    { LEVEL("1.b", AX_VENC_H264_LEVEL_1_b) },
++    { LEVEL("1.1", AX_VENC_H264_LEVEL_1_1) },
++    { LEVEL("1.2", AX_VENC_H264_LEVEL_1_2) },
++    { LEVEL("1.3", AX_VENC_H264_LEVEL_1_3) },
++    { LEVEL("2",   AX_VENC_H264_LEVEL_2) },
++    { LEVEL("2.1", AX_VENC_H264_LEVEL_2_1) },
++    { LEVEL("2.2", AX_VENC_H264_LEVEL_2_2) },
++    { LEVEL("3",   AX_VENC_H264_LEVEL_3) },
++    { LEVEL("3.1", AX_VENC_H264_LEVEL_3_1) },
++    { LEVEL("3.2", AX_VENC_H264_LEVEL_3_2) },
++    { LEVEL("4",   AX_VENC_H264_LEVEL_4) },
++    { LEVEL("4.1", AX_VENC_H264_LEVEL_4_1) },
++    { LEVEL("4.2", AX_VENC_H264_LEVEL_4_2) },
++    { LEVEL("5",   AX_VENC_H264_LEVEL_5) },
++    { LEVEL("5.1", AX_VENC_H264_LEVEL_5_1) },
++    { LEVEL("5.2", AX_VENC_H264_LEVEL_5_2) },
++    { LEVEL("6",   AX_VENC_H264_LEVEL_6) },
++    { LEVEL("6.1", AX_VENC_H264_LEVEL_6_1) },
++    { LEVEL("6.2", AX_VENC_H264_LEVEL_6_2) },
++#undef LEVEL
++
++    { "rc", "Override the preset rate-control", OFFSET(rc), AV_OPT_TYPE_INT, { .i64 = AX_VENC_RC_MODE_H264CBR }, AX_VENC_RC_MODE_H264CBR, AX_VENC_RC_MODE_H264QPMAP, VE, "rc" },
++    { "cbr", "Constant bitrate mode", 0, AV_OPT_TYPE_CONST, { .i64 = AX_VENC_RC_MODE_H264CBR }, 0, 0, VE, "rc" },
++    { "vbr", "Variable bitrate mode", 0, AV_OPT_TYPE_CONST, { .i64 = AX_VENC_RC_MODE_H264VBR }, 0, 0, VE, "rc" },
++    { "avbr", "Adaptive variable bitrate mode", 0, AV_OPT_TYPE_CONST, { .i64 = AX_VENC_RC_MODE_H264AVBR }, 0, 0, VE, "rc" },
++    { "fixqp", "Fix Qp mode", 0, AV_OPT_TYPE_CONST, { .i64 = AX_VENC_RC_MODE_H264FIXQP }, 0, 0, VE, "rc" },
++    { "i_qmin", "I-frames minimum Qp", OFFSET(i_qmin), AV_OPT_TYPE_INT, { .i64 = 16 }, 0, 51, VE, "i_qmin" },
++    { "i_qmax", "I-frames maximum Qp", OFFSET(i_qmax), AV_OPT_TYPE_INT, { .i64 = 51 }, 0, 51, VE, "i_qmax" },
++    { "qaLevel", "vbr quality level", OFFSET(enVQ), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 8, VE},
++    { "intraQpDelta", "QP difference between target QP and intra frame QP", OFFSET(intraQpDelta), AV_OPT_TYPE_INT, {.i64 = 0}, -51, 51, VE},
++    { "idrQpDeltaRange", "QP rang between CU QP and I frame QP", OFFSET(idrQpDeltaRange), AV_OPT_TYPE_INT, {.i64 = 10}, 2, 10, VE},
++    { "maxIprop", "the max I P size ratio", OFFSET(maxIprop), AV_OPT_TYPE_INT, {.i64 = 40}, 1, 100, VE},
++    { "minIprop", "the min I P size ratio", OFFSET(minIprop), AV_OPT_TYPE_INT, {.i64 = 10}, 1, 100, VE},
++    { "changePos", "the percent of max bitrate when vbr start adjust bitrate", OFFSET(changePos), AV_OPT_TYPE_INT, {.i64 = 80}, 20, 100, VE},
++    { "minStillPercent", NULL, OFFSET(minStillPercent), AV_OPT_TYPE_INT, {.i64 = 25}, 10, 100, VE},
++    { "maxStillQp", NULL, OFFSET(maxStillQp), AV_OPT_TYPE_INT, {.i64 = 36}, 0, 51, VE},
++    { "firstFrameStartQp", NULL, OFFSET(firstFrameStartQp), AV_OPT_TYPE_INT, {.i64 = 16}, 16, 51, VE},
++    { NULL }
++};
++
++static const FFCodecDefault defaults[] = {
++    { "b", "2M" },
++    { "qmin", "16" },
++    { "qmax", "51" },
++    { "g", "30" },
++    { NULL },
++};
++
++static const AVClass ff_ax_venc_class = {
++    .class_name = "h264_axenc",
++    .item_name = av_default_item_name,
++    .option = options,
++    .version = LIBAVUTIL_VERSION_INT,
++};
++
++const enum AVPixelFormat ff_h264_axenc_pix_fmts[] = {
++    AV_PIX_FMT_NV12,
++    AV_PIX_FMT_AXMM,
++    AV_PIX_FMT_NONE
++};
++
++const AVCodecHWConfigInternal *ff_h264_axenc_hw_configs[] = {
++    HW_CONFIG_ENCODER_DEVICE(NV12, AXMM),
++    NULL,
++};
++
++const FFCodec ff_h264_ax_encoder = {
++    .p.name           = "h264_axenc",
++    CODEC_LONG_NAME("AX H.264 encoder"),
++    .p.type           = AVMEDIA_TYPE_VIDEO,
++    .p.id             = AV_CODEC_ID_H264,
++    .init           = ff_h264_axenc_init,
++    FF_CODEC_RECEIVE_PACKET_CB(ff_h264_axenc_receive_packet),
++    .close          = ff_h264_axenc_close,
++    .flush          = ff_h264_axenc_flush,
++    .priv_data_size = sizeof(AXVencContext),
++    .p.priv_class     = &ff_ax_venc_class,
++    .defaults       = defaults,
++    .p.capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HARDWARE |
++                      AV_CODEC_CAP_ENCODER_FLUSH,
++    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
++    .p.pix_fmts       = ff_h264_axenc_pix_fmts,
++    .p.wrapper_name   = "h264_axenc",
++    .hw_configs     = ff_h264_axenc_hw_configs,
++};
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/hevc_axenc.c b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/hevc_axenc.c
+new file mode 100644
+index 00000000..be9199b6
+--- /dev/null
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavcodec/hevc_axenc.c
+@@ -0,0 +1,270 @@
++/*
++ * This file is part of FFmpeg.
++ *
++ * FFmpeg is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * FFmpeg is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with FFmpeg; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++ */
++
++#include <unistd.h>
++
++#include "libavutil/pixfmt.h"
++#include "libavutil/pixdesc.h"
++#include "libavutil/hwcontext.h"
++#include "libavutil/internal.h"
++#include "libavutil/hwcontext_axmm.h"
++
++#include "avcodec.h"
++#include "codec_internal.h"
++#include "encode.h"
++
++#include "axvenc.h"
++
++#define OFFSET(x) offsetof(AXVencContext, x)
++#define VE AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_ENCODING_PARAM
++
++static int hevc_enc_attr_init(AVCodecContext *ctx)
++{
++    int qmin, qmax, i_qmin, i_qmax;
++    AXVencContext *vctx = ctx->priv_data;
++    AX_VENC_CHN_ATTR_T *chn_attr = &vctx->chn_attr;
++
++    chn_attr->stVencAttr.enType = PT_H265;
++
++    if (ctx->profile == FF_PROFILE_UNKNOWN)
++        ctx->profile = vctx->profile;
++    if (ctx->level == FF_LEVEL_UNKNOWN)
++        ctx->level = vctx->level;
++
++    switch (ctx->profile) {
++    case FF_PROFILE_UNKNOWN:
++        av_log(ctx, AV_LOG_INFO, "use h.265 main profile as the default\n");
++        chn_attr->stVencAttr.enProfile = AX_VENC_HEVC_MAIN_PROFILE;
++        break;
++    case FF_PROFILE_HEVC_MAIN:
++        chn_attr->stVencAttr.enProfile = AX_VENC_HEVC_MAIN_PROFILE;
++        break;
++    case FF_PROFILE_HEVC_MAIN_10:
++        chn_attr->stVencAttr.enProfile = AX_VENC_HEVC_MAIN_10_PROFILE;
++        break;
++    default:
++        av_log(ctx, AV_LOG_ERROR, "profile(%d) is not supported\n", ctx->profile);
++        return AVERROR_PATCHWELCOME;
++    }
++
++    chn_attr->stVencAttr.enLevel = ctx->level;
++
++    chn_attr->stVencAttr.enStrmBitDepth = AX_VENC_STREAM_BIT_8;
++
++    qmin = ctx->qmin > 51 ? 51 : ctx->qmin;
++    qmax = ctx->qmax > 51 ? 51 : ctx->qmax;
++    if (qmin > qmax)
++        qmin = qmax;
++
++    i_qmin = (vctx->i_qmin == 52) ? qmin : vctx->i_qmin;
++    i_qmax = (vctx->i_qmax == 52) ? qmax : vctx->i_qmax;
++    if (i_qmin > i_qmax)
++        i_qmin = i_qmax;
++
++    av_log(ctx, AV_LOG_INFO, "%s rc:%d, qp:[%d,%d], i_qp:[%d,%d], bitrate:%ld\n", __func__, vctx->rc,
++           qmin, qmax, i_qmin, i_qmax, ctx->bit_rate);
++
++    chn_attr->stRcAttr.enRcMode = vctx->rc;
++
++    switch (vctx->rc) {
++    case AX_VENC_RC_MODE_H265CBR:
++        chn_attr->stRcAttr.s32FirstFrameStartQp = vctx->firstFrameStartQp;
++        chn_attr->stRcAttr.stH265Cbr.u32Gop = ctx->gop_size;
++        chn_attr->stRcAttr.stH265Cbr.u32BitRate = (ctx->bit_rate >= 1000) ? (ctx->bit_rate + 500) / 1000 : 2000;
++        chn_attr->stRcAttr.stH265Cbr.u32MinQp = qmin;
++        chn_attr->stRcAttr.stH265Cbr.u32MaxQp = qmax;
++        chn_attr->stRcAttr.stH265Cbr.u32MinIQp = i_qmin;
++        chn_attr->stRcAttr.stH265Cbr.u32MaxIQp = i_qmax;
++        chn_attr->stRcAttr.stH265Cbr.s32IntraQpDelta = vctx->intraQpDelta;
++        chn_attr->stRcAttr.stH265Cbr.u32IdrQpDeltaRange = vctx->idrQpDeltaRange;
++        chn_attr->stRcAttr.stH265Cbr.u32MaxIprop = vctx->maxIprop;
++        chn_attr->stRcAttr.stH265Cbr.u32MinIprop = vctx->minIprop;
++        chn_attr->stRcAttr.stH265Cbr.stQpmapInfo.enQpmapQpType = AX_VENC_QPMAP_QP_DISABLE;
++        chn_attr->stRcAttr.stH265Cbr.stQpmapInfo.enQpmapBlockType = AX_VENC_QPMAP_BLOCK_DISABLE;
++        chn_attr->stRcAttr.stH265Cbr.stQpmapInfo.enQpmapBlockUnit = AX_VENC_QPMAP_BLOCK_UNIT_64x64;
++        chn_attr->stRcAttr.stH265Cbr.stQpmapInfo.enCtbRcMode = AX_VENC_RC_CTBRC_DISABLE;
++        break;
++    case AX_VENC_RC_MODE_H265VBR:
++        chn_attr->stRcAttr.s32FirstFrameStartQp = vctx->firstFrameStartQp;
++        chn_attr->stRcAttr.stH265Vbr.u32Gop = ctx->gop_size;
++        chn_attr->stRcAttr.stH265Vbr.u32MaxBitRate = (ctx->bit_rate >= 1000) ? (ctx->bit_rate + 500) / 1000 : 2000;
++        chn_attr->stRcAttr.stH265Vbr.u32MinQp = qmin;
++        chn_attr->stRcAttr.stH265Vbr.u32MaxQp = qmax;
++        chn_attr->stRcAttr.stH265Vbr.u32MinIQp = i_qmin;
++        chn_attr->stRcAttr.stH265Vbr.u32MaxIQp = i_qmax;
++        chn_attr->stRcAttr.stH265Vbr.s32IntraQpDelta = vctx->intraQpDelta;
++        chn_attr->stRcAttr.stH265Vbr.u32IdrQpDeltaRange = vctx->idrQpDeltaRange;
++        chn_attr->stRcAttr.stH265Vbr.enVQ = vctx->enVQ;
++        chn_attr->stRcAttr.stH265Vbr.u32ChangePos = vctx->changePos;
++        chn_attr->stRcAttr.stH265Vbr.stQpmapInfo.enQpmapQpType = AX_VENC_QPMAP_QP_DISABLE;
++        chn_attr->stRcAttr.stH265Vbr.stQpmapInfo.enQpmapBlockType = AX_VENC_QPMAP_BLOCK_DISABLE;
++        chn_attr->stRcAttr.stH265Vbr.stQpmapInfo.enQpmapBlockUnit = AX_VENC_QPMAP_BLOCK_UNIT_64x64;
++        chn_attr->stRcAttr.stH265Vbr.stQpmapInfo.enCtbRcMode = AX_VENC_RC_CTBRC_DISABLE;
++        break;
++    case AX_VENC_RC_MODE_H265AVBR:
++        chn_attr->stRcAttr.s32FirstFrameStartQp = vctx->firstFrameStartQp;
++        chn_attr->stRcAttr.stH265AVbr.u32Gop = ctx->gop_size;
++        chn_attr->stRcAttr.stH265AVbr.u32MaxBitRate = (ctx->bit_rate >= 1000) ? (ctx->bit_rate + 500) / 1000 : 2000;
++        chn_attr->stRcAttr.stH265AVbr.u32MinQp = qmin;
++        chn_attr->stRcAttr.stH265AVbr.u32MaxQp = qmax;
++        chn_attr->stRcAttr.stH265AVbr.u32MinIQp = i_qmin;
++        chn_attr->stRcAttr.stH265AVbr.u32MaxIQp = i_qmax;
++        chn_attr->stRcAttr.stH265AVbr.s32IntraQpDelta = vctx->intraQpDelta;
++        chn_attr->stRcAttr.stH265AVbr.u32IdrQpDeltaRange = vctx->idrQpDeltaRange;
++        chn_attr->stRcAttr.stH265AVbr.u32ChangePos = vctx->changePos;
++        chn_attr->stRcAttr.stH265AVbr.u32MinStillPercent = vctx->minStillPercent;
++        chn_attr->stRcAttr.stH265AVbr.u32MaxStillQp = vctx->maxStillQp;
++        chn_attr->stRcAttr.stH265AVbr.stQpmapInfo.enQpmapQpType = AX_VENC_QPMAP_QP_DISABLE;
++        chn_attr->stRcAttr.stH265AVbr.stQpmapInfo.enQpmapBlockType = AX_VENC_QPMAP_BLOCK_DISABLE;
++        chn_attr->stRcAttr.stH265AVbr.stQpmapInfo.enQpmapBlockUnit = AX_VENC_QPMAP_BLOCK_UNIT_64x64;
++        chn_attr->stRcAttr.stH265AVbr.stQpmapInfo.enCtbRcMode = AX_VENC_RC_CTBRC_DISABLE;
++        break;
++    case AX_VENC_RC_MODE_H265FIXQP:
++        chn_attr->stRcAttr.s32FirstFrameStartQp = vctx->firstFrameStartQp;
++        chn_attr->stRcAttr.stH265FixQp.u32Gop = ctx->gop_size;
++        chn_attr->stRcAttr.stH265FixQp.u32IQp = i_qmax;
++        chn_attr->stRcAttr.stH265FixQp.u32PQp = qmax;
++        chn_attr->stRcAttr.stH265FixQp.u32BQp = 32;
++        break;
++    }
++
++    return 0;
++}
++
++static av_cold int ff_hevc_axenc_init(AVCodecContext *ctx)
++{
++    AXVencContext *vctx = ctx->priv_data;
++
++    if ((ctx->pix_fmt != AV_PIX_FMT_AXMM) && (!ctx->hw_device_ctx || ctx->hw_frames_ctx)){
++        av_log(ctx, AV_LOG_ERROR, "%s format(%s) requires hw_device_ctx must be set\n", __func__,
++               av_get_pix_fmt_name(ctx->pix_fmt));
++        return AVERROR(EINVAL);
++    }
++
++    vctx->attr_init = hevc_enc_attr_init;
++
++    return ff_axvenc_init(ctx);
++}
++
++static int ff_hevc_axenc_receive_packet(AVCodecContext *ctx, AVPacket *pkt)
++{
++    return ff_axvenc_receive_packet(ctx, pkt);
++}
++
++static av_cold int ff_hevc_axenc_close(AVCodecContext *ctx)
++{
++    return ff_axvenc_close(ctx);
++}
++
++static av_cold void ff_hevc_axenc_flush(AVCodecContext *ctx)
++{
++    ff_axvenc_flush(ctx);
++}
++
++static const AVOption options[] = {
++    { "profile", "Set profile(support main and main_10)", OFFSET(profile), AV_OPT_TYPE_INT,
++      { .i64 = FF_PROFILE_HEVC_MAIN }, FF_PROFILE_HEVC_MAIN, FF_PROFILE_HEVC_MAIN_10, VE, "profile" },
++
++#define PROFILE(name, value)  name, NULL, 0, AV_OPT_TYPE_CONST, { .i64 = value }, 0, 0, VE, "profile"
++    { PROFILE("main",     FF_PROFILE_HEVC_MAIN) },
++    { PROFILE("main_10",     FF_PROFILE_HEVC_MAIN_10) },
++#undef PROFILE
++
++    { "level", "Set level", OFFSET(level), AV_OPT_TYPE_INT,
++      { .i64 = AX_VENC_HEVC_LEVEL_5_1 }, AX_VENC_HEVC_LEVEL_1, AX_VENC_HEVC_LEVEL_6_2, VE, "level" },
++
++#define LEVEL(name, value) name, NULL, 0, AV_OPT_TYPE_CONST, { .i64 = value }, 0, 0, VE, "level"
++    { LEVEL("1",   AX_VENC_HEVC_LEVEL_1) },
++    { LEVEL("2",   AX_VENC_HEVC_LEVEL_2) },
++    { LEVEL("2.1", AX_VENC_HEVC_LEVEL_2_1) },
++    { LEVEL("3",   AX_VENC_HEVC_LEVEL_3) },
++    { LEVEL("3.1", AX_VENC_HEVC_LEVEL_3_1) },
++    { LEVEL("4",   AX_VENC_HEVC_LEVEL_4) },
++    { LEVEL("4.1", AX_VENC_HEVC_LEVEL_4_1) },
++    { LEVEL("5",   AX_VENC_HEVC_LEVEL_5) },
++    { LEVEL("5.1", AX_VENC_HEVC_LEVEL_5_1) },
++    { LEVEL("5.2", AX_VENC_HEVC_LEVEL_5_2) },
++    { LEVEL("6",   AX_VENC_HEVC_LEVEL_6) },
++    { LEVEL("6.1", AX_VENC_HEVC_LEVEL_6_1) },
++    { LEVEL("6.2", AX_VENC_HEVC_LEVEL_6_2) },
++#undef LEVEL
++
++    { "rc", "Override the preset rate-control", OFFSET(rc), AV_OPT_TYPE_INT, { .i64 = AX_VENC_RC_MODE_H265CBR }, AX_VENC_RC_MODE_H265CBR, AX_VENC_RC_MODE_H265QPMAP, VE, "rc" },
++    { "cbr", "Constant bitrate mode", 0, AV_OPT_TYPE_CONST, { .i64 = AX_VENC_RC_MODE_H265CBR }, 0, 0, VE, "rc" },
++    { "vbr", "Variable bitrate mode", 0, AV_OPT_TYPE_CONST, { .i64 = AX_VENC_RC_MODE_H265VBR }, 0, 0, VE, "rc" },
++    { "avbr", "Adaptive variable bitrate mode", 0, AV_OPT_TYPE_CONST, { .i64 = AX_VENC_RC_MODE_H265AVBR }, 0, 0, VE, "rc" },
++    { "fixqp", "Fix Qp mode", 0, AV_OPT_TYPE_CONST, { .i64 = AX_VENC_RC_MODE_H265FIXQP }, 0, 0, VE, "rc" },
++    { "i_qmin", "I-frames minimum Qp", OFFSET(i_qmin), AV_OPT_TYPE_INT, { .i64 = 16 }, 0, 51, VE, "i_qmin" },
++    { "i_qmax", "I-frames maximum Qp", OFFSET(i_qmax), AV_OPT_TYPE_INT, { .i64 = 51 }, 0, 51, VE, "i_qmax" },
++    { "qaLevel", "vbr quality level", OFFSET(enVQ), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 8, VE},
++    { "intraQpDelta", "QP difference between target QP and intra frame QP", OFFSET(intraQpDelta), AV_OPT_TYPE_INT, {.i64 = 0}, -51, 51, VE},
++    { "idrQpDeltaRange", "QP rang between CU QP and I frame QP", OFFSET(idrQpDeltaRange), AV_OPT_TYPE_INT, {.i64 = 10}, 2, 10, VE},
++    { "maxIprop", "the max I P size ratio", OFFSET(maxIprop), AV_OPT_TYPE_INT, {.i64 = 40}, 1, 100, VE},
++    { "minIprop", "the min I P size ratio", OFFSET(minIprop), AV_OPT_TYPE_INT, {.i64 = 10}, 1, 100, VE},
++    { "changePos", "the percent of max bitrate when vbr start adjust bitrate", OFFSET(changePos), AV_OPT_TYPE_INT, {.i64 = 80}, 20, 100, VE},
++    { "minStillPercent", NULL, OFFSET(minStillPercent), AV_OPT_TYPE_INT, {.i64 = 25}, 10, 100, VE},
++    { "maxStillQp", NULL, OFFSET(maxStillQp), AV_OPT_TYPE_INT, {.i64 = 36}, 0, 51, VE},
++    { "firstFrameStartQp", NULL, OFFSET(firstFrameStartQp), AV_OPT_TYPE_INT, {.i64 = 16}, 16, 51, VE},
++
++    { NULL }
++};
++
++static const FFCodecDefault defaults[] = {
++    { "b", "2M" },
++    { "qmin", "16" },
++    { "qmax", "51" },
++    { "g", "30" },
++    { NULL },
++};
++
++static const AVClass ff_ax_venc_class = {
++    .class_name = "hevc_axenc",
++    .item_name = av_default_item_name,
++    .option = options,
++    .version = LIBAVUTIL_VERSION_INT,
++};
++
++const enum AVPixelFormat ff_hevc_axenc_pix_fmts[] = {
++    AV_PIX_FMT_NV12,
++    AV_PIX_FMT_AXMM,
++    AV_PIX_FMT_NONE
++};
++
++const AVCodecHWConfigInternal *ff_hevc_axenc_hw_configs[] = {
++    HW_CONFIG_ENCODER_DEVICE(NV12, AXMM),
++    NULL,
++};
++const FFCodec ff_hevc_ax_encoder = {
++    .p.name           = "hevc_axenc",
++    CODEC_LONG_NAME("AX H.265 Encoder"),
++    .p.type           = AVMEDIA_TYPE_VIDEO,
++    .p.id             = AV_CODEC_ID_HEVC,
++    .init           = ff_hevc_axenc_init,
++    FF_CODEC_RECEIVE_PACKET_CB(ff_hevc_axenc_receive_packet),
++    .close          = ff_hevc_axenc_close,
++    .flush          = ff_hevc_axenc_flush,
++    .priv_data_size = sizeof(AXVencContext),
++    .p.priv_class     = &ff_ax_venc_class,
++    .defaults       = defaults,
++    .p.capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HARDWARE |
++                      AV_CODEC_CAP_ENCODER_FLUSH,
++    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
++    .p.pix_fmts       = ff_hevc_axenc_pix_fmts,
++    .p.wrapper_name   = "hevc_axenc",
++    .hw_configs     = ff_hevc_axenc_hw_configs,
++};
+\ No newline at end of file
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavfilter/Makefile b/3rdparty/ffmpeg/FFmpeg-n7.1/libavfilter/Makefile
+index 91487afb..4a4561a2 100644
+--- a/3rdparty/ffmpeg/FFmpeg-n7.1/libavfilter/Makefile
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavfilter/Makefile
+@@ -465,6 +465,7 @@ OBJS-$(CONFIG_SCALE_QSV_FILTER)              += vf_vpp_qsv.o
+ OBJS-$(CONFIG_SCALE_VAAPI_FILTER)            += vf_scale_vaapi.o scale_eval.o vaapi_vpp.o
+ OBJS-$(CONFIG_SCALE_VT_FILTER)               += vf_scale_vt.o scale_eval.o
+ OBJS-$(CONFIG_SCALE_VULKAN_FILTER)           += vf_scale_vulkan.o vulkan.o vulkan_filter.o
++OBJS-$(CONFIG_AX_SCALE_FILTER)               += vf_scale_axera.o
+ OBJS-$(CONFIG_SCALE2REF_FILTER)              += vf_scale.o scale_eval.o framesync.o
+ OBJS-$(CONFIG_SCALE2REF_NPP_FILTER)          += vf_scale_npp.o scale_eval.o
+ OBJS-$(CONFIG_SCDET_FILTER)                  += vf_scdet.o
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavfilter/allfilters.c b/3rdparty/ffmpeg/FFmpeg-n7.1/libavfilter/allfilters.c
+index 9819f0f9..ccdb2746 100644
+--- a/3rdparty/ffmpeg/FFmpeg-n7.1/libavfilter/allfilters.c
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavfilter/allfilters.c
+@@ -607,6 +607,7 @@ extern const AVFilter ff_vaf_spectrumsynth;
+ extern const AVFilter ff_avsrc_avsynctest;
+ extern const AVFilter ff_avsrc_amovie;
+ extern const AVFilter ff_avsrc_movie;
++extern const AVFilter ff_vf_ax_scale;
+ 
+ /* those filters are part of public or internal API,
+  * they are formatted to not be found by the grep
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavfilter/vf_scale_axera.c b/3rdparty/ffmpeg/FFmpeg-n7.1/libavfilter/vf_scale_axera.c
+new file mode 100644
+index 00000000..5dd8c94f
+--- /dev/null
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavfilter/vf_scale_axera.c
+@@ -0,0 +1,659 @@
++/*
++* Axera Semiconductor Avfilter
++*
++* Copyright (c) 2019-2024 Axera Semiconductor Co., Ltd.
++
++*
++* Permission is hereby granted, free of charge, to any person obtaining a
++* copy of this software and associated documentation files (the "Software"),
++* to deal in the Software without restriction, including without limitation
++* the rights to use, copy, modify, merge, publish, distribute, sublicense,
++* and/or sell copies of the Software, and to permit persons to whom the
++* Software is furnished to do so, subject to the following conditions:
++*
++* The above copyright notice and this permission notice shall be included in
++* all copies or substantial portions of the Software.
++*
++* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
++* THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++* DEALINGS IN THE SOFTWARE.
++*/
++
++#include <stdio.h>
++#include <string.h>
++
++#if defined(WIN32)
++#include <windows.h>
++#else
++#include <dlfcn.h>
++#endif
++
++#include "libavutil/avstring.h"
++#include "libavutil/common.h"
++#include "libavutil/hwcontext.h"
++#include "libavutil/internal.h"
++#include "libavutil/opt.h"
++#include "libavutil/pixdesc.h"
++#include "libavutil/hwcontext_axmm.h"
++#include "libavutil/time.h"
++
++#include "avfilter.h"
++#include "filters.h"
++#include "formats.h"
++#include "scale_eval.h"
++#include "video.h"
++#include "axcl.h"
++
++static const enum AVPixelFormat supported_formats[] = {
++    AV_PIX_FMT_NV12,
++    AV_PIX_FMT_NV21,
++    AV_PIX_FMT_P010,
++    AV_PIX_FMT_P016,
++    AV_PIX_FMT_Y400A,
++    AV_PIX_FMT_RGB24,
++};
++
++#define DIV_UP(a, b) ( ((a) + (b) - 1) / (b) )
++#define ALIGN_UP(a, b) (((a) + (b) - 1) & ~((b) - 1))
++#define NUM_BUFFERS 2
++#define BLOCKX 32
++#define BLOCKY 16
++
++#if defined(WIN32)
++#define LIB_IVPS_NAME    "libaxcl_ivps.dll"
++
++#define SAFE_FREE_LIBRARY(h) if (h) { FreeLibrary(h); h = NULL; }
++#else
++#define LIB_IVPS_NAME    "libaxcl_ivps.so"
++
++#define SAFE_FREE_LIBRARY(h) if (h) { dlclose(h); h = NULL; }
++#endif
++
++
++#define CHECK_WITH_RET(cond, ret) \
++    do { \
++        if ((cond) != 0) { \
++            av_log(NULL, AV_LOG_ERROR, "check %s failed\n", #cond); \
++            return (ret); \
++        } \
++    } while (0)
++
++typedef AX_S32 (*pFnAXCL_IVPS_Init)(AX_VOID);
++typedef AX_S32 (*pFnAXCL_IVPS_Deinit)(AX_VOID);
++typedef AX_S32 (*pFnAXCL_IVPS_CropResizeTdp)(const AX_VIDEO_FRAME_T*, AX_VIDEO_FRAME_T*, const AX_IVPS_ASPECT_RATIO_T*);
++typedef struct {
++    pFnAXCL_IVPS_Init ivps_init;
++    pFnAXCL_IVPS_Deinit ivps_deinit;
++    pFnAXCL_IVPS_CropResizeTdp ivps_resize;
++} AXIvpsFuncs;
++
++enum ScalerFunc {
++    F_BILINEAR = 0,
++    F_NEAREST,
++
++    F_NB,
++};
++
++typedef struct AXIvpsContext {
++    const AVClass *class;
++
++    enum AVPixelFormat in_fmt;
++    enum AVPixelFormat out_fmt;
++
++    struct {
++        int width;
++        int height;
++    } planes_in[3], planes_out[3];
++
++    AVBufferRef *frames_ctx;
++    AVFrame *frame;
++
++    AVFrame *tmp_frame;
++    int passthrough;
++
++    /**
++     * Output sw format. AV_PIX_FMT_NONE for no conversion.
++     */
++    enum AVPixelFormat format;
++
++    enum ScalerFunc scaler;
++    char *out_format_string;
++
++    char *w_expr;               ///< width  expression string
++    char *h_expr;               ///< height expression string
++
++    int force_original_aspect_ratio;
++    int force_divisible_by;
++
++    int initial_pool_size;
++    int devid;
++    axclrtContext context;
++
++#if defined(WIN32)
++    HMODULE ivps_lib;
++#else
++    void *ivps_lib;
++#endif
++    AXIvpsFuncs ivps_funcs;
++} AXIvpsContext;
++
++static int ax_ivps_dl(AXIvpsContext *s)
++{
++    AXIvpsFuncs *ivps_funcs = &s->ivps_funcs;
++
++#if defined(WIN32)
++    s->ivps_lib = LoadLibraryA(LIB_IVPS_NAME);
++    CHECK_WITH_RET(!s->ivps_lib, AVERROR(EINVAL));
++
++    ivps_funcs->ivps_init = (pFnAXCL_IVPS_Init)GetProcAddress(s->ivps_lib, "AXCL_IVPS_Init");
++    CHECK_WITH_RET(!ivps_funcs->ivps_init, AVERROR(EINVAL));
++
++    ivps_funcs->ivps_deinit = (pFnAXCL_IVPS_Deinit)GetProcAddress(s->ivps_lib, "AXCL_IVPS_Deinit");
++    CHECK_WITH_RET(!ivps_funcs->ivps_deinit, AVERROR(EINVAL));
++
++    ivps_funcs->ivps_resize = (pFnAXCL_IVPS_CropResizeTdp)GetProcAddress(s->ivps_lib, "AXCL_IVPS_CropResizeTdp");
++    CHECK_WITH_RET(!ivps_funcs->ivps_resize, AVERROR(EINVAL));
++#else // !defined(WIN32)
++    s->ivps_lib = dlopen(LIB_IVPS_NAME, RTLD_NOW | RTLD_GLOBAL);
++    CHECK_WITH_RET(!s->ivps_lib, AVERROR(EINVAL));
++
++    ivps_funcs->ivps_init = dlsym(s->ivps_lib, "AXCL_IVPS_Init");
++    CHECK_WITH_RET(!ivps_funcs->ivps_init, AVERROR(EINVAL));
++
++    ivps_funcs->ivps_deinit = dlsym(s->ivps_lib, "AXCL_IVPS_Deinit");
++    CHECK_WITH_RET(!ivps_funcs->ivps_deinit, AVERROR(EINVAL));
++
++    ivps_funcs->ivps_resize = dlsym(s->ivps_lib, "AXCL_IVPS_CropResizeTdp");
++    CHECK_WITH_RET(!ivps_funcs->ivps_resize, AVERROR(EINVAL));
++#endif // !defined(WIN32)
++
++    return 0;
++}
++
++static inline int scale_device_context_init(AVFilterContext *ctx)
++{
++    FilterLink *inl = ff_filter_link(ctx->inputs[0]);
++    AVHWFramesContext *in_frames_ctx;
++    AVHWDeviceContext *device_ctx;
++    AXMMDeviceContext *hwdc_priv;
++
++    int ret;
++    AXIvpsContext *s = ctx->priv;
++
++    /* check that we have a hw context */
++    if (!inl->hw_frames_ctx) {
++        av_log(s, AV_LOG_ERROR, "No hw context provided on input\n");
++        return AVERROR(EINVAL);
++    }
++
++    in_frames_ctx = (AVHWFramesContext*)inl->hw_frames_ctx->data;
++    device_ctx = in_frames_ctx->device_ctx;
++    hwdc_priv = device_ctx->hwctx;
++
++    ret = hwdc_priv->rtdev_funcs.rt_get_current_context(&s->context);
++    if (ret == AXCL_ERR_CONTEXT_NO_BIND_CONTEXT)
++        ret = hwdc_priv->rtdev_funcs.rt_create_context(&s->context, hwdc_priv->devid);
++
++    if (ret) {
++        av_log(s, AV_LOG_ERROR, "%s failed to init device%d context, ret = 0x%x\n", __func__,
++               hwdc_priv->devid, ret);
++        ret = AVERROR_EXTERNAL;
++    }
++
++    return ret;
++}
++
++static av_cold int axera_scale_init(AVFilterContext *ctx)
++{
++    AXIvpsContext *s = ctx->priv;
++    int ret = -1;
++
++    ret = ax_ivps_dl(s);
++    if (ret) {
++        av_log(s, AV_LOG_ERROR, "%s ax_ivps_dl failed, ret = 0x%x\n", __func__, ret);
++        goto ERR_RET;
++    }
++
++    s->format = AV_PIX_FMT_NONE;
++    s->passthrough = 0;
++    s->frames_ctx = NULL;
++    s->devid = -1;
++
++    s->frame = av_frame_alloc();
++    if (!s->frame) {
++        ret = AVERROR(ENOMEM);
++        av_log(s, AV_LOG_ERROR, "%s av_frame_alloc failed, ret = 0x%x\n", __func__, ret);
++        goto ERR_RET1;
++    }
++    av_log(s, AV_LOG_INFO, "%s Enter!!\n", __func__);
++
++    return 0;
++
++ERR_RET1:
++    SAFE_FREE_LIBRARY(s->ivps_lib);
++ERR_RET:
++    return ret;
++}
++
++static av_cold void axera_scale_uninit(AVFilterContext *ctx)
++{
++    AXIvpsContext *s = ctx->priv;
++    int ret = -1;
++    FilterLink *inl = ff_filter_link(ctx->inputs[0]);
++    AVHWFramesContext *in_frames_ctx;
++    AVHWDeviceContext *device_ctx;
++    AXMMDeviceContext *hwdc_priv;
++
++    av_log(s, AV_LOG_INFO, "%s Enter!!\n", __func__);
++
++    if (s->devid >= 0) {
++        ret = s->ivps_funcs.ivps_deinit();
++        if (ret) {
++            av_log(s, AV_LOG_ERROR, "%s ivps_deinit failed, ret = 0x%x\n", __func__, ret);
++        }
++
++        in_frames_ctx = (AVHWFramesContext*)inl->hw_frames_ctx->data;
++        device_ctx = in_frames_ctx->device_ctx;
++        hwdc_priv = device_ctx->hwctx;
++
++        ret = hwdc_priv->rtdev_funcs.rt_destroy_context(s->context);
++        if (ret) {
++            av_log(s, AV_LOG_ERROR, "%s rt_destroy_context(%d) failed, ret = 0x%x\n", __func__, s->devid, ret);
++        }
++    }
++
++    av_frame_free(&s->frame);
++
++    if (s->frames_ctx)
++        av_buffer_unref(&s->frames_ctx);
++
++    SAFE_FREE_LIBRARY(s->ivps_lib);
++
++    av_log(s, AV_LOG_DEBUG, "%s End!!\n", __func__);
++}
++
++static av_cold int init_stage(AXIvpsContext *s, AVBufferRef *device_ctx)
++{
++    AVBufferRef *out_ref = NULL;
++    AVHWFramesContext *out_ctx;
++    int in_sw, in_sh, out_sw, out_sh;
++    int ret, i;
++
++    av_pix_fmt_get_chroma_sub_sample(s->in_fmt,  &in_sw,  &in_sh);
++    av_pix_fmt_get_chroma_sub_sample(s->out_fmt, &out_sw, &out_sh);
++    if (!s->planes_out[0].width) {
++        s->planes_out[0].width  = s->planes_in[0].width;
++        s->planes_out[0].height = s->planes_in[0].height;
++    }
++
++    for (i = 1; i < FF_ARRAY_ELEMS(s->planes_in); i++) {
++        s->planes_in[i].width   = s->planes_in[0].width   >> in_sw;
++        s->planes_in[i].height  = s->planes_in[0].height  >> in_sh;
++        s->planes_out[i].width  = s->planes_out[0].width  >> out_sw;
++        s->planes_out[i].height = s->planes_out[0].height >> out_sh;
++    }
++
++    out_ref = av_hwframe_ctx_alloc(device_ctx);
++    if (!out_ref)
++        return AVERROR(ENOMEM);
++    out_ctx = (AVHWFramesContext*)out_ref->data;
++
++    out_ctx->format    = AV_PIX_FMT_AXMM;
++    out_ctx->sw_format = s->out_fmt;
++    out_ctx->width     = FFALIGN(s->planes_out[0].width,  16);
++    out_ctx->height    = FFALIGN(s->planes_out[0].height, 16);
++    out_ctx->initial_pool_size = s->initial_pool_size;
++
++    ret = av_hwframe_ctx_init(out_ref);
++    if (ret < 0)
++        goto fail;
++
++    av_frame_unref(s->frame);
++
++    s->frame->width  = s->planes_out[0].width;
++    s->frame->height = s->planes_out[0].height;
++
++    av_buffer_unref(&s->frames_ctx);
++    s->frames_ctx = out_ref;
++
++    return 0;
++fail:
++    av_buffer_unref(&out_ref);
++    return ret;
++}
++
++static int format_is_supported(enum AVPixelFormat fmt)
++{
++    int i;
++
++    for (i = 0; i < FF_ARRAY_ELEMS(supported_formats); i++)
++        if (supported_formats[i] == fmt)
++            return 1;
++    return 0;
++}
++
++static av_cold int init_processing_chain(AVFilterContext *ctx, int in_width, int in_height,
++                                         int out_width, int out_height)
++{
++    AXIvpsContext *s = ctx->priv;
++    FilterLink     *inl = ff_filter_link(ctx->inputs[0]);
++    FilterLink    *outl = ff_filter_link(ctx->outputs[0]);
++
++    AVHWFramesContext *in_frames_ctx;
++    AVHWDeviceContext *device_ctx;
++    AXMMDeviceContext *hwdc_priv;
++
++    enum AVPixelFormat in_format;
++    enum AVPixelFormat out_format;
++    int ret;
++    AVDictionary *opts = NULL;
++
++    /* check that we have a hw context */
++    if (!inl->hw_frames_ctx) {
++        av_log(ctx, AV_LOG_ERROR, "No hw context provided on input\n");
++        return AVERROR(EINVAL);
++    }
++
++    if (s->out_format_string) {
++        s->format = av_get_pix_fmt(s->out_format_string);
++        if (s->format == AV_PIX_FMT_NONE) {
++            av_log(s, AV_LOG_ERROR, "Invalid output format.\n");
++            return AVERROR(EINVAL);
++        }
++    }
++    in_frames_ctx = (AVHWFramesContext*)inl->hw_frames_ctx->data;
++    in_format     = in_frames_ctx->sw_format;
++    out_format    = (s->format == AV_PIX_FMT_NONE) ? in_format : s->format;
++
++    if (!format_is_supported(in_format)) {
++        av_log(ctx, AV_LOG_ERROR, "Unsupported input format: %s\n",
++               av_get_pix_fmt_name(in_format));
++        return AVERROR(ENOSYS);
++    }
++    if (!format_is_supported(out_format)) {
++        av_log(ctx, AV_LOG_ERROR, "Unsupported output format: %s\n",
++               av_get_pix_fmt_name(out_format));
++        return AVERROR(ENOSYS);
++    }
++
++    ret = scale_device_context_init(ctx);
++    if (ret) {
++        av_log(s, AV_LOG_ERROR, "SCALER axera_scale_init failed ret:0x%x\n", ret);
++        return AVERROR(EINVAL);
++    }
++
++    ret = s->ivps_funcs.ivps_init();
++    if (ret) {
++        av_log(s, AV_LOG_ERROR, "%s ivps_init failed, ret = 0x%x\n", __func__, ret);
++        goto ERR_RET;
++    }
++
++    device_ctx = in_frames_ctx->device_ctx;
++    hwdc_priv = device_ctx->hwctx;
++    s->devid = hwdc_priv->devid;
++
++    if (in_frames_ctx->initial_pool_size) {
++        s->initial_pool_size = in_frames_ctx->initial_pool_size;
++    } else {
++        s->initial_pool_size = 4;
++    }
++
++    /* for ivps out frame */
++    av_dict_set(&opts, "alloc_blk", "1", 0);
++    av_dict_set(&opts, "device_index", "hwdc_priv->dev_index", 0);
++
++    ret = av_hwdevice_ctx_create(&s->frames_ctx, AV_HWDEVICE_TYPE_AXMM,
++                                 NULL, opts, 0);
++    if (ret < 0) {
++        av_log(s, AV_LOG_ERROR, "Failed to create a VAAPI device. Error code: %s\n", av_err2str(ret));
++        goto ERR_RET1;
++    }
++
++    av_log(ctx, AV_LOG_DEBUG, " input format: %s, output format: %s, format:%s\n",
++           av_get_pix_fmt_name(in_format), av_get_pix_fmt_name(out_format), av_get_pix_fmt_name(s->format));
++
++    av_log(ctx, AV_LOG_INFO, " initial_pool_size: %d, dev_index:%d\n",
++           in_frames_ctx->initial_pool_size, hwdc_priv->dev_index);
++
++    if (in_width == out_width && in_height == out_height && in_format == out_format)
++        s->passthrough = 1;
++
++    s->in_fmt = in_format;
++    s->out_fmt = out_format;
++
++    s->planes_in[0].width   = in_width;
++    s->planes_in[0].height  = in_height;
++    s->planes_out[0].width  = out_width;
++    s->planes_out[0].height = out_height;
++
++    ret = init_stage(s, s->frames_ctx);
++    if (ret < 0)
++        goto ERR_RET2;
++
++    outl->hw_frames_ctx = av_buffer_ref(s->frames_ctx);
++    if (!outl->hw_frames_ctx) {
++        ret = AVERROR(ENOMEM);
++        goto ERR_RET2;
++    }
++
++    return 0;
++
++ERR_RET2:
++    av_buffer_unref(&s->frames_ctx);
++ERR_RET1:
++    s->ivps_funcs.ivps_deinit();
++ERR_RET:
++    return ret;
++}
++
++static av_cold int axera_scale_config_props(AVFilterLink *outlink)
++{
++    AVFilterContext *ctx = outlink->src;
++    AVFilterLink *inlink = outlink->src->inputs[0];
++    AXIvpsContext *s  = ctx->priv;
++
++    int w, h;
++    int ret;
++
++    if ((ret = ff_scale_eval_dimensions(s,
++                                        s->w_expr, s->h_expr,
++                                        inlink, outlink,
++                                        &w, &h)) < 0)
++        goto fail;
++
++    ff_scale_adjust_dimensions(inlink, &w, &h,
++                               s->force_original_aspect_ratio, s->force_divisible_by);
++
++    av_log(s, AV_LOG_DEBUG, "%s w:%d, h:%d, in_w:%d, in_h:%d\n", __func__, w, h, inlink->w, inlink->h);
++
++    if (((int64_t)h * inlink->w) > INT_MAX  ||
++        ((int64_t)w * inlink->h) > INT_MAX)
++        av_log(ctx, AV_LOG_ERROR, "Rescaled value for width or height is too big.\n");
++
++    outlink->w = w;
++    outlink->h = h;
++
++    ret = init_processing_chain(ctx, inlink->w, inlink->h, outlink->w, outlink->h);
++    if (ret < 0)
++        return ret;
++
++    av_log(ctx, AV_LOG_VERBOSE, "ax--scaler w:%d h:%d -> w:%d h:%d\n",
++           inlink->w, inlink->h, outlink->w, outlink->h);
++
++    if (inlink->sample_aspect_ratio.num) {
++        outlink->sample_aspect_ratio = av_mul_q((AVRational){outlink->h*inlink->w,
++                                                             outlink->w*inlink->h},
++                                                inlink->sample_aspect_ratio);
++    } else {
++        outlink->sample_aspect_ratio = inlink->sample_aspect_ratio;
++    }
++
++    return 0;
++
++fail:
++    return ret;
++}
++
++static int axera_scale_filter_frame(AVFilterLink *link, AVFrame *in)
++{
++    AVFilterContext       *ctx = link->dst;
++    AXIvpsContext        *s = ctx->priv;
++    AVFilterLink      *outlink = ctx->outputs[0];
++
++    AVFrame *out = NULL;
++    AX_VIDEO_FRAME_T ptSrc = {0};
++    AX_VIDEO_FRAME_T *ptDst = NULL;
++    AX_IVPS_ASPECT_RATIO_T ptAspectRatio;
++    int ret = 0;
++    AX_S32 retry_count = 3;
++
++    if (s->passthrough)
++        return ff_filter_frame(outlink, in);
++
++    ret = scale_device_context_init(ctx);
++    if (ret) {
++        av_log(s, AV_LOG_ERROR, "SCALER axera_scale_filter_frame failed ret:0x%x\n", ret);
++        goto ERR_RET;
++    }
++
++    out = av_frame_alloc();
++    if (!out) {
++        ret = AVERROR(ENOMEM);
++        goto ERR_RET;
++    }
++
++    /* for try get block */
++    retry:
++    ret = av_hwframe_get_buffer(s->frames_ctx, out, 0);
++    if (ret < 0) {
++        retry_count--;
++
++        if (!retry_count) {
++            av_log(s, AV_LOG_ERROR, "%s av_hwframe_get_buffer failed, ret = 0x%x\n", __func__, ret);
++            goto ERR_RET;
++        }
++        av_usleep(1000);
++        goto retry;
++    }
++
++    memset(&ptAspectRatio, 0x00, sizeof(ptAspectRatio));
++
++    /* video frame copy to ivps source frame */
++    memcpy(&ptSrc, in->data[4], sizeof(ptSrc));
++    ptDst = (AX_VIDEO_FRAME_T *)out->data[3];
++
++    switch (s->out_fmt) {
++        case AV_PIX_FMT_NV12:
++            ptDst->enImgFormat = AX_FORMAT_YUV420_SEMIPLANAR;
++            break;
++        case AV_PIX_FMT_NV21:
++            ptDst->enImgFormat = AX_FORMAT_YUV420_SEMIPLANAR_VU;
++            break;
++        case AV_PIX_FMT_P010:
++            ptDst->enImgFormat = AX_FORMAT_YUV420_SEMIPLANAR_10BIT_P010;
++            break;
++        case AV_PIX_FMT_P016:
++            ptDst->enImgFormat = AX_FORMAT_YUV420_SEMIPLANAR_10BIT_P016;
++            break;
++        case AV_PIX_FMT_Y400A:
++            ptDst->enImgFormat = AX_FORMAT_YUV400;
++            break;
++        case  AV_PIX_FMT_RGB24:
++            ptDst->enImgFormat = AX_FORMAT_RGB888;
++            break;
++        default:
++            av_log(s, AV_LOG_ERROR, "%s Unsupport ImgFormat:%d\n", __func__, s->out_fmt);
++            ret = -1;
++            goto ERR_RET;
++    }
++
++    ptDst->u32Width = outlink->w;
++    ptDst->u32Height = outlink->h;
++
++    ret = s->ivps_funcs.ivps_resize(&ptSrc, ptDst, &ptAspectRatio);
++    if (ret) {
++        av_log(s, AV_LOG_ERROR, "%s ivps_resize failed, ret = 0x%x\n", __func__, ret);
++        goto ERR_RET;
++    }
++    ptDst->u64PTS = ptSrc.u64PTS;
++    out->pts = in->pts;
++#if FF_API_PKT_PTS
++FF_DISABLE_DEPRECATION_WARNINGS
++    out->pkt_pts = in->pts;
++FF_ENABLE_DEPRECATION_WARNINGS
++#endif
++
++    av_log(s, AV_LOG_DEBUG, "%s src w:%d, h:%d, dst w:%d, h:%d, f:%d, height:%d, out_fmt:%d\n", __func__,
++           in->width, in->height, outlink->w, outlink->h, out->format, out->height, s->out_fmt);
++
++    av_frame_free(&in);
++    return ff_filter_frame(outlink, out);
++
++ERR_RET:
++    av_frame_free(&in);
++    av_frame_free(&out);
++    return ret;
++}
++
++#define OFFSET(x) offsetof(AXIvpsContext, x)
++#define FLAGS (AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM)
++
++static const AVOption options[] = {
++	{ "w",      "Output video width",  OFFSET(w_expr),     AV_OPT_TYPE_STRING, { .str = "iw"   }, .flags = FLAGS},
++    { "h",      "Output video height", OFFSET(h_expr),     AV_OPT_TYPE_STRING, { .str = "ih"   }, .flags = FLAGS },
++    { "scaler", "Scaler function", OFFSET(scaler), AV_OPT_TYPE_INT, {.i64 = F_BILINEAR}, 0, F_NB, .flags = FLAGS, "scaler" },
++        { "bilinear", "Bilinear interpolation (fastest)", 0, AV_OPT_TYPE_CONST, {.i64 = F_BILINEAR}, 0, 0, .flags = FLAGS, "scaler" },
++        { "nearest", "Nearest (useful for pixel art)", 0, AV_OPT_TYPE_CONST, {.i64 = F_NEAREST}, 0, 0, .flags = FLAGS, "scaler" },
++    { "format", "Output video format (software format of hardware frames)", OFFSET(out_format_string), AV_OPT_TYPE_STRING, .flags = FLAGS },
++    { "force_original_aspect_ratio", "decrease or increase w/h if necessary to keep the original AR", OFFSET(force_original_aspect_ratio), AV_OPT_TYPE_INT, { .i64 = 0}, 0, 2, FLAGS, "force_oar" },
++    { "disable",  NULL, 0, AV_OPT_TYPE_CONST, {.i64 = 0 }, 0, 0, FLAGS, "force_oar" },
++    { "decrease", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = 1 }, 0, 0, FLAGS, "force_oar" },
++    { "increase", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = 2 }, 0, 0, FLAGS, "force_oar" },
++    { "force_divisible_by", "enforce that the output resolution is divisible by a defined integer when force_original_aspect_ratio is used", OFFSET(force_divisible_by), AV_OPT_TYPE_INT, { .i64 = 1}, 1, 16, FLAGS },
++    { NULL },
++};
++
++static const AVClass ax_ivps_class = {
++    .class_name = "ax_scale",
++    .item_name  = av_default_item_name,
++    .option     = options,
++    .version    = LIBAVUTIL_VERSION_INT,
++};
++
++static const AVFilterPad ax_ivps_inputs[] = {
++    {
++        .name        = "default",
++        .type        = AVMEDIA_TYPE_VIDEO,
++        .filter_frame = axera_scale_filter_frame,
++    },
++};
++
++static const AVFilterPad ax_ivps_outputs[] = {
++    {
++        .name         = "default",
++        .type         = AVMEDIA_TYPE_VIDEO,
++        .config_props = axera_scale_config_props,
++    },
++};
++
++const AVFilter ff_vf_ax_scale = {
++    .name      = "ax_scale",
++    .description = NULL_IF_CONFIG_SMALL("Frame resizer and format conversion"),
++
++    .init          = axera_scale_init,
++    .uninit        = axera_scale_uninit,
++    //.query_formats = axera_scale_query_formats,
++
++    .priv_size = sizeof(AXIvpsContext),
++    .priv_class = &ax_ivps_class,
++
++    FILTER_INPUTS(ax_ivps_inputs),
++    FILTER_OUTPUTS(ax_ivps_outputs),
++    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_AXMM),
++
++    .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
++};
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/Makefile b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/Makefile
+index 6e6fa8d8..ede491f8 100644
+--- a/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/Makefile
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/Makefile
+@@ -207,6 +207,7 @@ OBJS-$(CONFIG_VDPAU)                    += hwcontext_vdpau.o
+ OBJS-$(CONFIG_VULKAN)                   += hwcontext_vulkan.o vulkan.o
+ 
+ OBJS-$(!CONFIG_VULKAN)                  += hwcontext_stub.o
++OBJS-$(CONFIG_AXMM)                     += hwcontext_axmm.o
+ 
+ OBJS += $(COMPAT_OBJS:%=../compat/%)
+ 
+@@ -228,6 +229,7 @@ SKIPHEADERS-$(CONFIG_VDPAU)            += hwcontext_vdpau.h
+ SKIPHEADERS-$(CONFIG_VULKAN)           += hwcontext_vulkan.h vulkan.h   \
+                                           vulkan_functions.h            \
+                                           vulkan_loader.h
++SKIPHEADERS-$(CONFIG_AXMM)             += hwcontext_axmm.h
+ 
+ TESTPROGS = adler32                                                     \
+             aes                                                         \
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext.c b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext.c
+index fa99a0d8..d93fc1a0 100644
+--- a/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext.c
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext.c
+@@ -65,6 +65,9 @@ static const HWContextType * const hw_table[] = {
+ #endif
+ #if CONFIG_VULKAN
+     &ff_hwcontext_type_vulkan,
++#endif
++#if CONFIG_AXMM
++    &ff_hwcontext_type_axmm,
+ #endif
+     NULL,
+ };
+@@ -82,6 +85,7 @@ static const char *const hw_type_names[] = {
+     [AV_HWDEVICE_TYPE_VIDEOTOOLBOX] = "videotoolbox",
+     [AV_HWDEVICE_TYPE_MEDIACODEC] = "mediacodec",
+     [AV_HWDEVICE_TYPE_VULKAN] = "vulkan",
++    [AV_HWDEVICE_TYPE_AXMM] = "axmm",
+ };
+ 
+ typedef struct FFHWDeviceContext {
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext.h b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext.h
+index bac30deb..48a03999 100644
+--- a/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext.h
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext.h
+@@ -38,6 +38,7 @@ enum AVHWDeviceType {
+     AV_HWDEVICE_TYPE_MEDIACODEC,
+     AV_HWDEVICE_TYPE_VULKAN,
+     AV_HWDEVICE_TYPE_D3D12VA,
++    AV_HWDEVICE_TYPE_AXMM,
+ };
+ 
+ /**
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext_axmm.c b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext_axmm.c
+new file mode 100644
+index 00000000..73f93dee
+--- /dev/null
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext_axmm.c
+@@ -0,0 +1,811 @@
++/*
++ * This file is part of FFmpeg.
++ *
++ * FFmpeg is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * FFmpeg is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with FFmpeg; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++ */
++
++#include <unistd.h>
++
++#if defined(WIN32)
++#include <windows.h>
++#else
++#include <dlfcn.h>
++#endif
++
++#include "config.h"
++
++#include "buffer.h"
++#include "common.h"
++#include "hwcontext.h"
++#include "hwcontext_internal.h"
++#include "hwcontext_axmm.h"
++#include "libavcodec/avcodec.h"
++#include "mem.h"
++#include "pixfmt.h"
++#include "pixdesc.h"
++#include "imgutils.h"
++
++#include "axcl.h"
++
++#define CHECK_WITH_RET(cond, ret) \
++    do { \
++        if ((cond) != 0) { \
++            av_log(NULL, AV_LOG_ERROR, "check %s failed\n", #cond); \
++            return (ret); \
++        } \
++    } while (0)
++
++#if defined(WIN32)
++#define LIB0_NAME    "libaxcl_rt.dll"
++#define LIB1_NAME    "libaxcl_sys.dll"
++#define SAFE_FREE_LIBRARY(h) if (h) { FreeLibrary(h); h = NULL; }
++#else
++#define LIB0_NAME    "libaxcl_rt.so"
++#define LIB1_NAME    "libaxcl_sys.so"
++
++#define SAFE_FREE_LIBRARY(h) if (h) { dlclose(h); h = NULL; }
++#endif
++
++#define AXMM_FRAME_ALIGNMENT 16
++#define FR_MAGIC             0x5A5AA5A5
++
++static const enum AVPixelFormat supported_formats[] = {
++    AV_PIX_FMT_NV12,
++    AV_PIX_FMT_NV21,
++    AV_PIX_FMT_YUV420P,
++    AV_PIX_FMT_P010,
++    AV_PIX_FMT_P016,
++    AV_PIX_FMT_Y400A,
++    AV_PIX_FMT_RGB24,
++};
++
++static inline AX_IMG_FORMAT_E axmm_format_convert(enum AVPixelFormat fmt)
++{
++    switch (fmt) {
++    case AV_PIX_FMT_NV12:
++        return AX_FORMAT_YUV420_SEMIPLANAR;
++    case AV_PIX_FMT_NV21:
++        return AX_FORMAT_YUV420_SEMIPLANAR_VU;
++    case AV_PIX_FMT_YUV420P:
++        return AX_FORMAT_YUV420_PLANAR;
++    case AV_PIX_FMT_P010:
++        return AX_FORMAT_YUV420_SEMIPLANAR_10BIT_P010;
++    case AV_PIX_FMT_P016:
++        return AX_FORMAT_YUV420_SEMIPLANAR_10BIT_P016;
++    case AV_PIX_FMT_Y400A:
++        return AX_FORMAT_YUV400;
++    case AV_PIX_FMT_RGB24:
++        return AX_FORMAT_RGB888;
++    }
++
++    av_log(NULL, AV_LOG_ERROR, "%s pixel format '%s' is not supported\n", __func__,
++           av_get_pix_fmt_name(fmt));
++
++    return AX_FORMAT_INVALID;
++}
++
++static inline int axmm_device_context_init(AXMMDeviceContext *mmctx)
++{
++    int ret;
++    axclrtContext context;
++
++    ret = mmctx->rtdev_funcs.rt_get_current_context(&context);
++    if (ret == AXCL_ERR_CONTEXT_NO_BIND_CONTEXT)
++        ret = mmctx->rtdev_funcs.rt_create_context(&context, mmctx->devid);
++
++    if (ret) {
++        av_log(mmctx, AV_LOG_ERROR, "%s failed to init device%d context, ret = 0x%x\n", __func__,
++               mmctx->devid, ret);
++        ret = AVERROR_EXTERNAL;
++    }
++
++    return ret;
++}
++
++static void axmm_device_free(AVHWDeviceContext *ctx)
++{
++}
++
++static int axmm_device_dl(AXMMDeviceContext *mmctx)
++{
++    AXRTDeviceFuncs *rtdev_funcs = &mmctx->rtdev_funcs;
++    AXMMDeviceFuncs *mmdev_funcs = &mmctx->mmdev_funcs;
++
++#if defined(WIN32)
++    // rt lib
++    mmctx->rt_lib = LoadLibraryA(LIB0_NAME);
++    CHECK_WITH_RET(!mmctx->rt_lib, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_init = (pFnaxclInit)GetProcAddress(mmctx->rt_lib, "axclInit");
++    CHECK_WITH_RET(!rtdev_funcs->rt_init, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_finalize = (pFnaxclFinalize)GetProcAddress(mmctx->rt_lib, "axclFinalize");
++    CHECK_WITH_RET(!rtdev_funcs->rt_finalize, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_set_device = (pFnaxclrtSetDevice)GetProcAddress(mmctx->rt_lib, "axclrtSetDevice");
++    CHECK_WITH_RET(!rtdev_funcs->rt_set_device, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_reset_device = (pFnaxclrtResetDevice)GetProcAddress(mmctx->rt_lib, "axclrtResetDevice");
++    CHECK_WITH_RET(!rtdev_funcs->rt_set_device, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_get_device_list = (pFnaxclrtGetDeviceList)GetProcAddress(mmctx->rt_lib, "axclrtGetDeviceList");
++    CHECK_WITH_RET(!rtdev_funcs->rt_get_device_list, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_create_context = (pFnaxclrtCreateContext)GetProcAddress(mmctx->rt_lib, "axclrtCreateContext");
++    CHECK_WITH_RET(!rtdev_funcs->rt_create_context, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_get_current_context = (pFnaxclrtGetCurrentContext)GetProcAddress(mmctx->rt_lib, "axclrtGetCurrentContext");
++    CHECK_WITH_RET(!rtdev_funcs->rt_get_current_context, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_destroy_context = (pFnaxclrtDestroyContext)GetProcAddress(mmctx->rt_lib, "axclrtDestroyContext");
++    CHECK_WITH_RET(!rtdev_funcs->rt_destroy_context, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_memcpy = (pFnaxclrtMemcpy)GetProcAddress(mmctx->rt_lib, "axclrtMemcpy");
++    CHECK_WITH_RET(!rtdev_funcs->rt_memcpy, AVERROR_EXTERNAL);
++
++    // mm sys lib
++    mmctx->mm_sys_lib = LoadLibraryA(LIB1_NAME);
++    CHECK_WITH_RET(!mmctx->mm_sys_lib, AVERROR_EXTERNAL);
++
++    mmdev_funcs->sys_init = (pFnAXCL_SYS_Init)GetProcAddress(mmctx->mm_sys_lib, "AXCL_SYS_Init");
++    CHECK_WITH_RET(!mmdev_funcs->sys_init, AVERROR_EXTERNAL);
++
++    mmdev_funcs->sys_deinit = (pFnAXCL_SYS_Deinit)GetProcAddress(mmctx->mm_sys_lib, "AXCL_SYS_Deinit");
++    CHECK_WITH_RET(!mmdev_funcs->sys_deinit, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_init = (pFnAXCL_POOL_Init)GetProcAddress(mmctx->mm_sys_lib, "AXCL_POOL_Init");
++    CHECK_WITH_RET(!mmdev_funcs->pool_init, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_exit = (pFnAXCL_POOL_Exit)GetProcAddress(mmctx->mm_sys_lib, "AXCL_POOL_Exit");
++    CHECK_WITH_RET(!mmdev_funcs->pool_exit, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_create = (pFnAXCL_POOL_CreatePool)GetProcAddress(mmctx->mm_sys_lib, "AXCL_POOL_CreatePool");
++    CHECK_WITH_RET(!mmdev_funcs->pool_create, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_destroy = (pFnAXCL_POOL_DestroyPool)GetProcAddress(mmctx->mm_sys_lib, "AXCL_POOL_DestroyPool");
++    CHECK_WITH_RET(!mmdev_funcs->pool_destroy, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_get_block = (pFnAXCL_POOL_GetBlock)GetProcAddress(mmctx->mm_sys_lib, "AXCL_POOL_GetBlock");
++    CHECK_WITH_RET(!mmdev_funcs->pool_get_block, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_release_block = (pFnAXCL_POOL_ReleaseBlock)GetProcAddress(mmctx->mm_sys_lib, "AXCL_POOL_ReleaseBlock");
++    CHECK_WITH_RET(!mmdev_funcs->pool_release_block, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_paddr2handle = (pFnAXCL_POOL_PhysAddr2Handle)GetProcAddress(mmctx->mm_sys_lib, "AXCL_POOL_PhysAddr2Handle");
++    CHECK_WITH_RET(!mmdev_funcs->pool_paddr2handle, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_handle2paddr = (pFnAXCL_POOL_Handle2PhysAddr)GetProcAddress(mmctx->mm_sys_lib, "AXCL_POOL_Handle2PhysAddr");
++    CHECK_WITH_RET(!mmdev_funcs->pool_handle2paddr, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_handle2vaddr = (pFnAXCL_POOL_GetBlockVirAddr)GetProcAddress(mmctx->mm_sys_lib, "AXCL_POOL_GetBlockVirAddr");
++    CHECK_WITH_RET(!mmdev_funcs->pool_handle2paddr, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_ref_get = (pFnAXCL_POOL_IncreaseRefCnt)GetProcAddress(mmctx->mm_sys_lib, "AXCL_POOL_IncreaseRefCnt");
++    CHECK_WITH_RET(!mmdev_funcs->pool_ref_get, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_ref_put = (pFnAXCL_POOL_DecreaseRefCnt)GetProcAddress(mmctx->mm_sys_lib, "AXCL_POOL_DecreaseRefCnt");
++    CHECK_WITH_RET(!mmdev_funcs->pool_ref_put, AVERROR_EXTERNAL);
++
++#else // !defined(WIN32)
++
++    mmctx->rt_lib = dlopen(LIB0_NAME, RTLD_NOW | RTLD_GLOBAL);
++    CHECK_WITH_RET(!mmctx->rt_lib, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_init = dlsym(mmctx->rt_lib, "axclInit");
++    CHECK_WITH_RET(!rtdev_funcs->rt_init, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_finalize = dlsym(mmctx->rt_lib, "axclFinalize");
++    CHECK_WITH_RET(!rtdev_funcs->rt_finalize, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_set_device = dlsym(mmctx->rt_lib, "axclrtSetDevice");
++    CHECK_WITH_RET(!rtdev_funcs->rt_set_device, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_reset_device = dlsym(mmctx->rt_lib, "axclrtResetDevice");
++    CHECK_WITH_RET(!rtdev_funcs->rt_set_device, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_get_device_list = dlsym(mmctx->rt_lib, "axclrtGetDeviceList");
++    CHECK_WITH_RET(!rtdev_funcs->rt_get_device_list, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_create_context = dlsym(mmctx->rt_lib, "axclrtCreateContext");
++    CHECK_WITH_RET(!rtdev_funcs->rt_create_context, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_get_current_context = dlsym(mmctx->rt_lib, "axclrtGetCurrentContext");
++    CHECK_WITH_RET(!rtdev_funcs->rt_get_current_context, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_destroy_context = dlsym(mmctx->rt_lib, "axclrtDestroyContext");
++    CHECK_WITH_RET(!rtdev_funcs->rt_destroy_context, AVERROR_EXTERNAL);
++
++    rtdev_funcs->rt_memcpy = dlsym(mmctx->rt_lib, "axclrtMemcpy");
++    CHECK_WITH_RET(!rtdev_funcs->rt_memcpy, AVERROR_EXTERNAL);
++
++    mmctx->mm_sys_lib = dlopen(LIB1_NAME, RTLD_NOW | RTLD_GLOBAL);
++    CHECK_WITH_RET(!mmctx->mm_sys_lib, AVERROR_EXTERNAL);
++
++    mmdev_funcs->sys_init = dlsym(mmctx->mm_sys_lib, "AXCL_SYS_Init");
++    CHECK_WITH_RET(!mmdev_funcs->sys_init, AVERROR_EXTERNAL);
++
++    mmdev_funcs->sys_deinit = dlsym(mmctx->mm_sys_lib, "AXCL_SYS_Deinit");
++    CHECK_WITH_RET(!mmdev_funcs->sys_deinit, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_init = dlsym(mmctx->mm_sys_lib, "AXCL_POOL_Init");
++    CHECK_WITH_RET(!mmdev_funcs->pool_init, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_exit = dlsym(mmctx->mm_sys_lib, "AXCL_POOL_Exit");
++    CHECK_WITH_RET(!mmdev_funcs->pool_exit, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_create = dlsym(mmctx->mm_sys_lib, "AXCL_POOL_CreatePool");
++    CHECK_WITH_RET(!mmdev_funcs->pool_create, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_destroy = dlsym(mmctx->mm_sys_lib, "AXCL_POOL_DestroyPool");
++    CHECK_WITH_RET(!mmdev_funcs->pool_destroy, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_get_block = dlsym(mmctx->mm_sys_lib, "AXCL_POOL_GetBlock");
++    CHECK_WITH_RET(!mmdev_funcs->pool_get_block, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_release_block = dlsym(mmctx->mm_sys_lib, "AXCL_POOL_ReleaseBlock");
++    CHECK_WITH_RET(!mmdev_funcs->pool_release_block, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_paddr2handle = dlsym(mmctx->mm_sys_lib, "AXCL_POOL_PhysAddr2Handle");
++    CHECK_WITH_RET(!mmdev_funcs->pool_paddr2handle, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_handle2paddr = dlsym(mmctx->mm_sys_lib, "AXCL_POOL_Handle2PhysAddr");
++    CHECK_WITH_RET(!mmdev_funcs->pool_handle2paddr, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_handle2vaddr = dlsym(mmctx->mm_sys_lib, "AXCL_POOL_GetBlockVirAddr");
++    CHECK_WITH_RET(!mmdev_funcs->pool_handle2paddr, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_ref_get = dlsym(mmctx->mm_sys_lib, "AXCL_POOL_IncreaseRefCnt");
++    CHECK_WITH_RET(!mmdev_funcs->pool_ref_get, AVERROR_EXTERNAL);
++
++    mmdev_funcs->pool_ref_put = dlsym(mmctx->mm_sys_lib, "AXCL_POOL_DecreaseRefCnt");
++    CHECK_WITH_RET(!mmdev_funcs->pool_ref_put, AVERROR_EXTERNAL);
++
++#endif // !defined(WIN32)
++
++    return 0;
++}
++
++static int axmm_device_create(AVHWDeviceContext *ctx, const char *device,
++                              AVDictionary *opts, int flags)
++{
++    int ret;
++    axclrtDeviceList device_list;
++    AVDictionaryEntry* dict_entry;
++    AXMMDeviceContext *mmctx = ctx->hwctx;
++
++    ctx->user_opaque = mmctx;
++    ctx->free = axmm_device_free;
++    mmctx->dev_index = 0;
++
++    mmctx->alloc_blk = av_dict_get(opts, "alloc_blk", NULL, 0) ? 1 : 0;
++    av_log(ctx, AV_LOG_INFO, "%s alloc_blk:%d\n", __func__, mmctx->alloc_blk);
++
++    ret = axmm_device_dl(mmctx);
++    if (ret)
++        goto err0;
++
++    ret = mmctx->rtdev_funcs.rt_init(NULL);
++    if (ret) {
++        av_log(ctx, AV_LOG_ERROR, "%s rt_init failed, ret = 0x%x\n", __func__, ret);
++        ret = AVERROR_EXTERNAL;
++        goto err0;
++    }
++
++    ret = mmctx->rtdev_funcs.rt_get_device_list(&device_list);
++    if (ret || !device_list.num) {
++        av_log(ctx, AV_LOG_ERROR, "%s no device is connected, ret = 0x%x\n", __func__, ret);
++        ret = AVERROR_EXTERNAL;
++        goto err1;
++    }
++
++    dict_entry = av_dict_get(opts, "device_index", NULL, 0);
++    if (!dict_entry) {
++        mmctx->devid = device_list.devices[0];
++        av_log(ctx, AV_LOG_WARNING, "<device_index> is not found in dict, set default index 0, device id %d\n", mmctx->devid);
++    } else {
++        int device_index = atoi(dict_entry->value);
++        if (device_index < 0 || device_index >= device_list.num) {
++            av_log(ctx, AV_LOG_ERROR, "device index %d is out of range [0, %d)\n", device_index, device_list.num);
++            ret = AVERROR_EXTERNAL;
++            goto err1;
++        }
++
++        mmctx->devid = device_list.devices[device_index];
++        mmctx->dev_index = device_index;
++        av_log(ctx, AV_LOG_INFO, "device index %d, device id %d\n", device_index, mmctx->devid);
++    }
++
++    ret = mmctx->rtdev_funcs.rt_set_device(mmctx->devid);
++    if (ret) {
++        av_log(ctx, AV_LOG_ERROR, "%s rt_set_device(%d) failed, ret = 0x%x\n", __func__, mmctx->devid, ret);
++        ret = AVERROR_EXTERNAL;
++        goto err1;
++    }
++
++    if (ret = mmctx->mmdev_funcs.sys_init()) {
++        av_log(ctx, AV_LOG_ERROR, "%s sys_init failed on device%d, ret = 0x%x\n", __func__,
++               mmctx->devid, ret);
++        ret = AVERROR_EXTERNAL;
++        goto err2;
++    }
++
++    av_log(ctx, AV_LOG_VERBOSE, "%s create device(%d) success\n", __func__, mmctx->devid);
++
++    return 0;
++
++err2:
++    mmctx->rtdev_funcs.rt_reset_device(mmctx->devid);
++err1:
++    mmctx->rtdev_funcs.rt_finalize();
++err0:
++    SAFE_FREE_LIBRARY(mmctx->rt_lib);
++    SAFE_FREE_LIBRARY(mmctx->mm_sys_lib);
++
++    return ret;
++}
++
++static int axmm_device_init(AVHWDeviceContext *ctx)
++{
++    av_log(ctx, AV_LOG_VERBOSE, "%s enter\n", __func__);
++
++    return 0;
++}
++
++static void axmm_device_uninit(AVHWDeviceContext *ctx)
++{
++    AXMMDeviceContext *mmctx = ctx->hwctx;
++
++    mmctx->rtdev_funcs.rt_reset_device(mmctx->devid);
++    mmctx->rtdev_funcs.rt_finalize();
++
++    av_log(ctx, AV_LOG_VERBOSE, "%s deactive device(%d) and cleanup mmctx\n", __func__, mmctx->devid);
++}
++
++static int axmm_frames_get_constraints(AVHWDeviceContext *ctx, const void *hwconfig,
++                                       AVHWFramesConstraints *constraints)
++{
++    av_log(ctx, AV_LOG_VERBOSE, "%s enter\n", __func__);
++
++    return 0;
++}
++
++static void axmm_pool_buffer_free(void *opaque, uint8_t *data)
++{
++}
++
++static AVBufferRef *axmm_pool_alloc(void *opaque, size_t size)
++{
++    AVHWFramesContext *hwfc = opaque;
++    AXMMDeviceContext *hwdc_priv = hwfc->device_ctx->hwctx;
++    AVBufferRef *ref;
++
++    ref = av_buffer_create(NULL, 0, &axmm_pool_buffer_free, hwfc, AV_BUFFER_FLAG_READONLY);
++    if (!ref)
++        av_log(hwfc, AV_LOG_ERROR, "%s create buffer ref failed on device%d\n", __func__, hwdc_priv->devid);
++
++    return ref;
++}
++
++static int axmm_frames_init(AVHWFramesContext *hwfc)
++{
++    int i, size, ret;
++    AVHWDeviceContext *device_ctx = hwfc->device_ctx;
++    AXMMDeviceContext *hwdc_priv = device_ctx->hwctx;
++    AXMMFramesContext *hwfc_priv = hwfc->hwctx;
++    AVAXMMFramesContext *hwfc_ax = &hwfc_priv->p;
++
++    for (i = 0; i < FF_ARRAY_ELEMS(supported_formats); i++) {
++        if (hwfc->sw_format == supported_formats[i])
++            break;
++    }
++
++    if (i == FF_ARRAY_ELEMS(supported_formats)) {
++        av_log(hwfc, AV_LOG_ERROR, "%s pixel format '%s' is not supported\n", __func__,
++               av_get_pix_fmt_name(hwfc->sw_format));
++        return AVERROR(ENOSYS);
++    }
++
++    if (!hwfc->pool) {
++        if (hwfc->initial_pool_size <= 0) {
++            av_log(hwfc, AV_LOG_ERROR, "AXMM requires a fixed frame pool size\n");
++            return AVERROR(EINVAL);
++        }
++
++        size = av_image_get_buffer_size(hwfc->sw_format, hwfc->width, hwfc->height, AXMM_FRAME_ALIGNMENT);
++        if (size < 0) {
++            av_log(hwfc, AV_LOG_ERROR, "%s buffer-%dx%d@%s invalid\n", __func__,
++                   hwfc->width, hwfc->height, av_get_pix_fmt_name(hwfc->sw_format));
++            return size;
++        }
++
++        hwfc_priv->devid = hwdc_priv->devid;
++        hwfc_priv->alloc_blk = hwdc_priv->alloc_blk;
++        hwfc_priv->dev_index = hwdc_priv->dev_index;
++
++        ret = axmm_device_context_init(hwdc_priv);
++        if (ret)
++            return ret;
++
++        if (hwfc_priv->alloc_blk) {
++            hwfc_priv->pool_id = AX_INVALID_POOLID;
++            hwfc_priv->pool_cfg.MetaSize = 512;
++            hwfc_priv->pool_cfg.BlkCnt = hwfc->initial_pool_size;
++            hwfc_priv->pool_cfg.BlkSize = size;
++            hwfc_priv->pool_cfg.CacheMode = POOL_CACHE_MODE_NONCACHE;
++            strcpy((char *)hwfc_priv->pool_cfg.PartitionName, "anonymous");
++
++            hwfc_priv->pool_id = hwdc_priv->mmdev_funcs.pool_create(&hwfc_priv->pool_cfg);
++            if (hwfc_priv->pool_id == AX_INVALID_POOLID) {
++                av_log(hwfc, AV_LOG_ERROR, "%s create pool failed on device%d\n", __func__, hwdc_priv->devid);
++                return AVERROR_EXTERNAL;
++            }
++        }
++
++        ffhwframesctx(hwfc)->pool_internal = av_buffer_pool_init2(size, hwfc, &axmm_pool_alloc, NULL);
++        if (!ffhwframesctx(hwfc)->pool_internal) {
++            av_log(hwfc, AV_LOG_ERROR, "%s create hwframe pool failed on device%d\n", __func__,
++                   hwdc_priv->devid);
++            if (hwfc_priv->alloc_blk) {
++                hwdc_priv->mmdev_funcs.pool_destroy(hwfc_priv->pool_id);
++                hwfc_priv->pool_id = AX_INVALID_POOLID;
++            }
++            return AVERROR_EXTERNAL;
++        }
++    }
++
++    hwfc_ax->devid = hwfc_priv->devid;
++    hwfc_ax->blk_id = 0;
++
++    av_log(hwfc, AV_LOG_VERBOSE, "%s create pool%d on device%d success\n", __func__,
++           hwfc_priv->pool_id, hwdc_priv->devid);
++
++    return 0;
++}
++
++static void axmm_frames_uninit(AVHWFramesContext *hwfc)
++{
++    av_log(hwfc, AV_LOG_VERBOSE, "%s enter\n", __func__);
++}
++
++static void axmm_buffer_free(void *opaque, uint8_t *data)
++{
++    AVHWFramesContext *hwfc = opaque;
++    AXMMDeviceContext *hwdc_priv = hwfc->device_ctx->hwctx;
++    AX_VIDEO_FRAME_T *fr = (AX_VIDEO_FRAME_T *)data;
++
++    av_log(hwfc, AV_LOG_VERBOSE, "%s free blk:%x\n", __func__, fr->u32BlkId[0]);
++
++    if (axmm_device_context_init(hwdc_priv))
++        return;
++
++    if (fr->u32BlkId[0]) {
++        if (hwdc_priv->alloc_blk) {
++            hwdc_priv->mmdev_funcs.pool_release_block(fr->u32BlkId[0]);
++        } else {
++            hwdc_priv->mmdev_funcs.pool_ref_put(fr->u32BlkId[0]);
++        }
++    }
++
++    av_free(fr);
++}
++
++static int axmm_get_buffer(AVHWFramesContext *hwfc, AVFrame *frame)
++{
++    int ret;
++    AX_VIDEO_FRAME_T *fr;
++    AVHWDeviceContext *device_ctx = hwfc->device_ctx;
++    AXMMDeviceContext *hwdc_priv = device_ctx->hwctx;
++    AXMMFramesContext *hwfc_priv = hwfc->hwctx;
++
++    if (axmm_device_context_init(hwdc_priv))
++        goto err0;
++
++    frame->buf[0] = av_buffer_pool_get(hwfc->pool);
++    if (!frame->buf[0]) {
++        ret = AVERROR(ENOMEM);
++        goto err0;
++    }
++
++    ret = av_image_fill_arrays(frame->data, frame->linesize, NULL, hwfc->sw_format,
++                               hwfc->width, hwfc->height, AXMM_FRAME_ALIGNMENT);
++    if (ret < 0)
++        goto err0;
++
++    fr = av_mallocz(sizeof(*fr));
++    if (!fr) {
++        av_log(hwfc, AV_LOG_ERROR, "%s failed to malloc fr\n", __func__);
++        ret = AVERROR(ENOMEM);
++        goto err0;
++    }
++
++    fr->enImgFormat = axmm_format_convert(hwfc->sw_format);
++    if (fr->enImgFormat < 0) {
++        av_log(hwfc, AV_LOG_ERROR, "%s sw_format(%x) invalid\n", __func__, hwfc->sw_format);
++        ret = AVERROR(EINVAL);
++        goto err1;
++    }
++
++    fr->u32FrameSize = hwfc_priv->pool_cfg.BlkSize;
++
++    if (hwfc_priv->alloc_blk) {
++        fr->u32BlkId[0] = hwdc_priv->mmdev_funcs.pool_get_block(hwfc_priv->pool_id, fr->u32FrameSize, NULL);
++        if (fr->u32BlkId[0] == AX_INVALID_BLOCKID) {
++            av_log(hwfc, AV_LOG_ERROR, "%s failed to get blk from pool%d on device%d\n", __func__,
++                   hwfc_priv->pool_id, hwdc_priv->devid);
++            ret = AVERROR_EXTERNAL;
++            goto err1;
++        }
++
++        fr->u64PhyAddr[0] = hwdc_priv->mmdev_funcs.pool_handle2paddr(fr->u32BlkId[0]);
++        if (!fr->u64PhyAddr[0]) {
++            av_log(hwfc, AV_LOG_ERROR, "%s failed to translate paddr from blk(0x%x) on device%d\n", __func__,
++                   fr->u32BlkId[0], hwdc_priv->devid);
++            ret = AVERROR_EXTERNAL;
++            goto err2;
++        }
++
++        fr->u64VirAddr[0] = (AX_U64)hwdc_priv->mmdev_funcs.pool_handle2vaddr(fr->u32BlkId[0]);
++        if (!fr->u64VirAddr[0]) {
++            av_log(hwfc, AV_LOG_ERROR, "%s failed to translate vaddr from blk(0x%x) on device%d\n", __func__,
++                   fr->u32BlkId[0], hwdc_priv->devid);
++            ret = AVERROR_EXTERNAL;
++            goto err2;
++        }
++    } else {
++        if (hwfc_priv->p.blk_id) {
++            hwdc_priv->mmdev_funcs.pool_ref_get(hwfc_priv->p.blk_id);
++        }
++    }
++
++    av_log(hwfc, AV_LOG_VERBOSE, "%s alloc fr success on device%d, fr-info:[%d,%x,%x,%llx,%llx], line:%d, format:%d\n", __func__,
++           hwfc_priv->devid, hwfc_priv->pool_id, fr->u32BlkId[0],
++           fr->u32FrameSize, fr->u64VirAddr[0], fr->u64PhyAddr[0], frame->linesize[0], hwfc->sw_format);
++
++    if (hwfc->sw_format != AV_PIX_FMT_Y400A) {
++        frame->buf[1] = av_buffer_create((uint8_t *)fr, sizeof(fr), &axmm_buffer_free, hwfc, AV_BUFFER_FLAG_READONLY);
++        if (!frame->buf[1]) {
++            av_log(hwfc, AV_LOG_ERROR, "%s failed to create buffer ref on device%d\n", __func__, hwdc_priv->devid);
++            ret = AVERROR(ENOMEM);
++            goto err2;
++        }
++    }
++
++    frame->data[0] = (uint8_t *)FR_MAGIC;
++
++    if (hwfc_priv->alloc_blk)
++        frame->data[3] = (uint8_t *)fr;
++    else
++        frame->data[4] = (uint8_t *)fr;
++
++    frame->format  = AV_PIX_FMT_AXMM;
++    frame->width   = hwfc->width;
++    frame->height  = hwfc->height;
++
++    fr->u32Width = frame->width;
++    fr->u32Height = frame->height;
++    fr->u32PicStride[0] = frame->linesize[0];
++    fr->u32PicStride[1] = frame->linesize[1];
++    fr->u32PicStride[2] = frame->linesize[2];
++
++    return 0;
++
++err2:
++    if (fr->u32BlkId[0])
++        hwdc_priv->mmdev_funcs.pool_release_block(fr->u32BlkId[0]);
++err1:
++    av_free(fr);
++err0:
++    return ret;
++}
++
++static int axmm_transfer_get_formats(AVHWFramesContext *ctx,
++                                     enum AVHWFrameTransferDirection dir,
++                                     enum AVPixelFormat **formats)
++{
++    enum AVPixelFormat *fmts;
++
++    av_log(ctx, AV_LOG_VERBOSE, "%s enter\n", __func__);
++
++    fmts = av_malloc_array(2, sizeof(*fmts));
++    if (!fmts)
++        return AVERROR(ENOMEM);
++
++    fmts[0] = ctx->sw_format;
++    fmts[1] = AV_PIX_FMT_NONE;
++
++    *formats = fmts;
++
++    return 0;
++}
++
++static int axmm_transfer_data(AVHWFramesContext *ctx, AVFrame *dst, const AVFrame *src)
++{
++    int ret;
++    AVHWFramesContext *hwfc_src = NULL, *hwfc_dst = NULL;
++    AXMMDeviceContext *hwdc_src = NULL, *hwdc_dst = NULL;
++
++    hwdc_dst = (AXMMDeviceContext *)ctx->device_ctx->hwctx;
++    ret = axmm_device_context_init(hwdc_dst);
++    if (ret)
++        return ret;
++
++    if (src->hw_frames_ctx && dst->hw_frames_ctx) { // device to device
++        AX_VIDEO_FRAME_T *fr_src, *fr_dst;
++
++        hwfc_src = (AVHWFramesContext *)src->hw_frames_ctx->data;
++        hwdc_src = (AXMMDeviceContext *)hwfc_src->device_ctx->hwctx;
++        hwfc_dst = (AVHWFramesContext *)dst->hw_frames_ctx->data;
++        hwdc_dst = (AXMMDeviceContext *)hwfc_dst->device_ctx->hwctx;
++
++        if (hwdc_src->devid != hwdc_dst->devid) {
++            av_log(ctx, AV_LOG_ERROR, "%s device mismatch, src-device%d, dst-device%d\n", __func__,
++                   hwdc_src->devid, hwdc_dst->devid);
++            return AVERROR(EINVAL);
++        }
++
++        if (hwfc_src->format != AV_PIX_FMT_AXMM || hwfc_src->format != hwfc_dst->format) {
++            av_log(ctx, AV_LOG_ERROR, "%s format mismatch on device%d, src-fmt:%s, dst-fmt:%s\n", __func__,
++                   hwdc_dst->devid, av_get_pix_fmt_name(hwfc_src->format), av_get_pix_fmt_name(hwfc_dst->format));
++            return AVERROR(EINVAL);
++        }
++
++        fr_src = (hwdc_src->alloc_blk) ? (AX_VIDEO_FRAME_T *)src->data[3] : (AX_VIDEO_FRAME_T *)src->data[4];
++        fr_dst = (hwdc_dst->alloc_blk) ? (AX_VIDEO_FRAME_T *)dst->data[3] : (AX_VIDEO_FRAME_T *)dst->data[4];
++
++        if (fr_src->u32FrameSize != fr_dst->u32FrameSize) {
++            av_log(ctx, AV_LOG_ERROR, "%s data size mismatch on device%d, src-size:0x%x, dst-size:0x%x\n", __func__,
++                   hwdc_dst->devid, fr_src->u32FrameSize, fr_dst->u32FrameSize);
++            return AVERROR(EINVAL);
++        }
++
++        if (!fr_dst->u64PhyAddr[0] || !fr_src->u64PhyAddr[0]) {
++            av_log(ctx, AV_LOG_ERROR, "%s addr invalid on device%d, src-paddr:0x%llx, dst-paddr:0x%llx\n", __func__,
++                   hwdc_dst->devid, fr_src->u64PhyAddr[0], fr_dst->u64PhyAddr[0]);
++            return AVERROR(EINVAL);
++        }
++
++        ret = hwdc_dst->rtdev_funcs.rt_memcpy((void *)fr_dst->u64PhyAddr[0], (void *)fr_src->u64PhyAddr[0],
++                                              fr_dst->u32FrameSize, AXCL_MEMCPY_DEVICE_TO_DEVICE);
++        if (ret) {
++            av_log(ctx, AV_LOG_ERROR, "%s failed to transfer data from 0x%llx to 0x%llx on device%d, ret = 0x%x\n", __func__,
++                   fr_src->u64PhyAddr[0], fr_dst->u64PhyAddr[0], hwdc_dst->devid, ret);
++            return AVERROR_EXTERNAL;
++        }
++    } else {
++        int size;
++        AX_VIDEO_FRAME_T *fr;
++
++        if ((src->linesize[0] != dst->linesize[0]) ||
++            (src->linesize[1] != dst->linesize[1]) ||
++            (src->linesize[2] != dst->linesize[2])) {
++            av_log(ctx, AV_LOG_ERROR, "%s linesize mismatch, src-linesize:%d-%d-%d, dst-linesize:%d-%d-%d\n", __func__,
++                   src->linesize[0], src->linesize[1], src->linesize[2],
++                   dst->linesize[0], dst->linesize[1], dst->linesize[2]);
++            return AVERROR(EINVAL);
++        }
++
++        if (dst->hw_frames_ctx) { // host to device
++            hwfc_dst = (AVHWFramesContext *)dst->hw_frames_ctx->data;
++            hwdc_dst = (AXMMDeviceContext *)hwfc_dst->device_ctx->hwctx;
++
++            fr = (hwdc_dst->alloc_blk) ? (AX_VIDEO_FRAME_T *)dst->data[3] : (AX_VIDEO_FRAME_T *)dst->data[4];
++
++            if (hwfc_dst->format != AV_PIX_FMT_AXMM) {
++                av_log(hwdc_dst, AV_LOG_ERROR, "%s format(%s) is not supported on device%d\n", __func__,
++                       av_get_pix_fmt_name(hwfc_dst->format), hwdc_dst->devid);
++                return AVERROR(EINVAL);
++            }
++
++            if (hwfc_dst->sw_format != src->format) {
++                av_log(ctx, AV_LOG_ERROR, "%s sw format mismatch on device%d, src-fmt:%s, dst-fmt:%s\n", __func__,
++                       hwdc_dst->devid, av_get_pix_fmt_name(src->format), av_get_pix_fmt_name(hwfc_dst->sw_format));
++                return AVERROR(EINVAL);
++            }
++
++            if (!fr->u64PhyAddr[0] || !src->data[0]) {
++                av_log(ctx, AV_LOG_ERROR, "%s addr invalid on device%d, src-addr:0x%p, dst-paddr:0x%llx\n", __func__,
++                       hwdc_dst->devid, src->data[0], fr->u64PhyAddr[0]);
++                return AVERROR(EINVAL);
++            }
++
++            size = src->linesize[0] * src->height;
++            ret = hwdc_dst->rtdev_funcs.rt_memcpy((void *)fr->u64PhyAddr[0], src->data[0], size, AXCL_MEMCPY_HOST_TO_DEVICE);
++            if (ret) {
++                av_log(hwdc_dst, AV_LOG_ERROR, "%s failed to transfer data from host:0x%p to device%d:0x%llx, ret = 0x%x\n", __func__,
++                       src->data[0], hwdc_dst->devid, fr->u64PhyAddr[0], ret);
++                return AVERROR_EXTERNAL;
++            }
++
++            if (src->data[1]) {
++                uint64_t paddr = fr->u64PhyAddr[1] ? fr->u64PhyAddr[1] : fr->u64PhyAddr[0] + size;
++
++                size = (src->linesize[1] * src->height) >> 1;
++                ret = hwdc_dst->rtdev_funcs.rt_memcpy((void *)paddr, src->data[1], size, AXCL_MEMCPY_HOST_TO_DEVICE);
++                if (ret) {
++                    av_log(hwdc_dst, AV_LOG_ERROR, "%s failed to transfer data from host:0x%p to device%d:0x%lx, ret = 0x%x\n", __func__,
++                           src->data[1], hwdc_dst->devid, paddr, ret);
++                    return AVERROR_EXTERNAL;
++                }
++            }
++        } else { // device to host
++            hwfc_src = (AVHWFramesContext *)src->hw_frames_ctx->data;
++            hwdc_src = (AXMMDeviceContext *)hwfc_src->device_ctx->hwctx;
++
++            fr = (hwdc_src->alloc_blk) ? (AX_VIDEO_FRAME_T *)src->data[3] : (AX_VIDEO_FRAME_T *)src->data[4];
++
++            if (hwfc_src->format != AV_PIX_FMT_AXMM) {
++                av_log(hwdc_src, AV_LOG_ERROR, "%s format(%s) is not supported on device%d\n", __func__,
++                       av_get_pix_fmt_name(hwfc_src->format), hwdc_src->devid);
++                return AVERROR(EINVAL);
++            }
++
++            if (hwfc_src->sw_format != dst->format) {
++                av_log(ctx, AV_LOG_ERROR, "%s sw format mismatch on device%d, src-fmt:%s, dst-fmt:%s\n", __func__,
++                       hwdc_src->devid, av_get_pix_fmt_name(hwfc_src->sw_format), av_get_pix_fmt_name(dst->format));
++                return AVERROR(EINVAL);
++            }
++
++            if (!fr->u64PhyAddr[0] || !dst->data[0]) {
++                av_log(ctx, AV_LOG_ERROR, "%s addr invalid on device%d, src-paddr:0x%lld, dst-addr:0x%p\n", __func__,
++                       hwdc_dst->devid, fr->u64PhyAddr[0], dst->data[0]);
++                return AVERROR(EINVAL);
++            }
++
++            size = dst->linesize[0] * dst->height;
++            ret = hwdc_src->rtdev_funcs.rt_memcpy(dst->data[0], (void *)fr->u64PhyAddr[0], size, AXCL_MEMCPY_DEVICE_TO_HOST);
++            if (ret) {
++                av_log(hwdc_src, AV_LOG_ERROR, "%s failed to transfer data from device%d:0x%llx to host:0x%p, ret = 0x%x\n", __func__,
++                       hwdc_src->devid, fr->u64PhyAddr[0], dst->data[0], ret);
++                return AVERROR_EXTERNAL;
++            }
++
++            if (dst->data[1]) {
++                uint64_t paddr = fr->u64PhyAddr[1] ? fr->u64PhyAddr[1] : fr->u64PhyAddr[0] + size;
++
++                size = (dst->linesize[1] * dst->height) >> 1;
++                ret = hwdc_src->rtdev_funcs.rt_memcpy(dst->data[1], (void *)paddr, size, AXCL_MEMCPY_DEVICE_TO_HOST);
++                if (ret) {
++                    av_log(hwdc_src, AV_LOG_ERROR, "%s failed to transfer data from device%d:0x%lx to host:0x%p, ret = 0x%x\n", __func__,
++                           hwdc_src->devid, paddr, dst->data[1], ret);
++                    return AVERROR_EXTERNAL;
++                }
++            }
++
++        }
++    }
++
++    return 0;
++}
++
++const HWContextType ff_hwcontext_type_axmm = {
++    .type                    = AV_HWDEVICE_TYPE_AXMM,
++    .name                    = "axmm",
++
++    .device_hwctx_size       = sizeof(AXMMDeviceContext),
++    .frames_hwctx_size       = sizeof(AXMMFramesContext),
++
++    .device_create           = axmm_device_create,
++    .device_init             = axmm_device_init,
++    .device_uninit           = axmm_device_uninit,
++    .frames_get_constraints  = axmm_frames_get_constraints,
++    .frames_init             = axmm_frames_init,
++    .frames_uninit           = axmm_frames_uninit,
++    .frames_get_buffer       = axmm_get_buffer,
++    .transfer_get_formats    = axmm_transfer_get_formats,
++    .transfer_data_to        = axmm_transfer_data,
++    .transfer_data_from      = axmm_transfer_data,
++
++    .pix_fmts = (const enum AVPixelFormat[]){ AV_PIX_FMT_AXMM, AV_PIX_FMT_NONE },
++};
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext_axmm.h b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext_axmm.h
+new file mode 100644
+index 00000000..a79e8478
+--- /dev/null
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext_axmm.h
+@@ -0,0 +1,131 @@
++/*
++ * This file is part of FFmpeg.
++ *
++ * FFmpeg is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * FFmpeg is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with FFmpeg; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++ */
++
++#ifndef AVUTIL_HWCONTEXT_AXMM_H
++#define AVUTIL_HWCONTEXT_AXMM_H
++
++#if defined(WIN32)
++#include <windows.h>
++#endif
++
++#include "axcl.h"
++
++/**
++ * @file
++ * An API-specific header for AV_HWDEVICE_TYPE_AXMM.
++ */
++
++/**
++ * This struct is allocated as AVHWDeviceContext.hwctx
++ */
++typedef struct AVAXMMDeviceContext {
++} AVAXMMDeviceContext;
++
++/**
++ * This struct is allocated as AVHWFramesContext.hwctx
++ */
++typedef struct AVAXMMFramesContext {
++    unsigned devid;
++    unsigned blk_id;
++} AVAXMMFramesContext;
++
++
++typedef AX_S32   (*pFnAXCL_SYS_Init)(AX_VOID);
++typedef AX_S32   (*pFnAXCL_SYS_Deinit)(AX_VOID);
++typedef AX_S32   (*pFnAXCL_POOL_Init)(AX_VOID);
++typedef AX_S32   (*pFnAXCL_POOL_Exit)(AX_VOID);
++typedef AX_POOL  (*pFnAXCL_POOL_CreatePool)(AX_POOL_CONFIG_T *);
++typedef AX_S32   (*pFnAXCL_POOL_DestroyPool)(AX_POOL);
++typedef AX_BLK   (*pFnAXCL_POOL_GetBlock)(AX_POOL, AX_U64, const AX_S8 *);
++typedef AX_S32   (*pFnAXCL_POOL_ReleaseBlock)(AX_BLK);
++typedef AX_BLK   (*pFnAXCL_POOL_PhysAddr2Handle)(AX_U64);
++typedef AX_U64   (*pFnAXCL_POOL_Handle2PhysAddr)(AX_BLK);
++typedef AX_VOID *(*pFnAXCL_POOL_GetBlockVirAddr)(AX_BLK);
++typedef AX_S32   (*pFnAXCL_POOL_IncreaseRefCnt)(AX_BLK);
++typedef AX_S32   (*pFnAXCL_POOL_DecreaseRefCnt)(AX_BLK);
++
++typedef struct {
++    pFnAXCL_SYS_Init sys_init;
++    pFnAXCL_SYS_Deinit sys_deinit;
++    pFnAXCL_POOL_Init pool_init;
++    pFnAXCL_POOL_Exit pool_exit;
++    pFnAXCL_POOL_CreatePool pool_create;
++    pFnAXCL_POOL_DestroyPool pool_destroy;
++    pFnAXCL_POOL_GetBlock pool_get_block;
++    pFnAXCL_POOL_ReleaseBlock pool_release_block;
++    pFnAXCL_POOL_PhysAddr2Handle pool_paddr2handle;
++    pFnAXCL_POOL_Handle2PhysAddr pool_handle2paddr;
++    pFnAXCL_POOL_GetBlockVirAddr pool_handle2vaddr;
++    pFnAXCL_POOL_IncreaseRefCnt pool_ref_get;
++    pFnAXCL_POOL_DecreaseRefCnt pool_ref_put;
++} AXMMDeviceFuncs;
++
++typedef axclError (*pFnaxclInit)(const char *);
++typedef axclError (*pFnaxclFinalize)(void);
++typedef axclError (*pFnaxclrtSetDevice)(int32_t);
++typedef axclError (*pFnaxclrtResetDevice)(int32_t);
++typedef axclError (*pFnaxclrtGetDeviceList)(axclrtDeviceList *);
++typedef axclError (*pFnaxclrtCreateContext)(axclrtContext *, int32_t);
++typedef axclError (*pFnaxclrtGetCurrentContext)(axclrtContext *);
++typedef axclError (*pFnaxclrtDestroyContext)(axclrtContext);
++typedef axclError (*pFnaxclrtMemcpy)(void *, const void *, size_t, axclrtMemcpyKind);
++
++typedef struct {
++    pFnaxclInit rt_init;
++    pFnaxclFinalize rt_finalize;
++    pFnaxclrtSetDevice rt_set_device;
++    pFnaxclrtResetDevice rt_reset_device;
++    pFnaxclrtGetDeviceList rt_get_device_list;
++    pFnaxclrtCreateContext rt_create_context;
++    pFnaxclrtGetCurrentContext rt_get_current_context;
++    pFnaxclrtDestroyContext rt_destroy_context;
++    pFnaxclrtMemcpy rt_memcpy;
++} AXRTDeviceFuncs;
++
++typedef struct {
++    int devid;
++    int dev_index;
++
++    int alloc_blk;
++
++#if defined(WIN32)
++    HMODULE rt_lib;
++    HMODULE mm_sys_lib;
++#else
++    void *rt_lib;
++    void *mm_sys_lib;
++#endif
++
++    AXRTDeviceFuncs rtdev_funcs;
++    AXMMDeviceFuncs mmdev_funcs;
++} AXMMDeviceContext;
++
++typedef struct {
++    /* The public AVAXMMFramesContext. See hwcontext_axmm.h for it */
++    AVAXMMFramesContext p;
++
++    int devid;
++    int dev_index;
++
++    int alloc_blk;
++
++    AX_POOL pool_id;
++    AX_POOL_CONFIG_T pool_cfg;
++} AXMMFramesContext;
++
++#endif /* AVUTIL_HWCONTEXT_AXMM_H */
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext_internal.h b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext_internal.h
+index e32b7862..a6fb32f8 100644
+--- a/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext_internal.h
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/hwcontext_internal.h
+@@ -163,5 +163,6 @@ extern const HWContextType ff_hwcontext_type_vdpau;
+ extern const HWContextType ff_hwcontext_type_videotoolbox;
+ extern const HWContextType ff_hwcontext_type_mediacodec;
+ extern const HWContextType ff_hwcontext_type_vulkan;
++extern const HWContextType ff_hwcontext_type_axmm;
+ 
+ #endif /* AVUTIL_HWCONTEXT_INTERNAL_H */
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/pixdesc.c b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/pixdesc.c
+index 1c0bcf22..2517da71 100644
+--- a/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/pixdesc.c
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/pixdesc.c
+@@ -2791,6 +2791,10 @@ static const AVPixFmtDescriptor av_pix_fmt_descriptors[AV_PIX_FMT_NB] = {
+         },
+         .flags = AV_PIX_FMT_FLAG_PLANAR,
+     },
++    [AV_PIX_FMT_AXMM] = {
++        .name = "axmm",
++        .flags = AV_PIX_FMT_FLAG_HWACCEL,
++    },
+ };
+ 
+ static const char * const color_range_names[] = {
+diff --git a/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/pixfmt.h b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/pixfmt.h
+index a7f50e16..841aa1f4 100644
+--- a/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/pixfmt.h
++++ b/3rdparty/ffmpeg/FFmpeg-n7.1/libavutil/pixfmt.h
+@@ -438,7 +438,7 @@ enum AVPixelFormat {
+      * data[0] points to an AVD3D12VAFrame
+      */
+     AV_PIX_FMT_D3D12,
+-
++    AV_PIX_FMT_AXMM,      ///< axera multi-media hardware fmt
+     AV_PIX_FMT_NB         ///< number of pixel formats, DO NOT USE THIS if you want to link with shared libav* because the number of formats might differ between versions
+ };
+ 

@@ -1,0 +1,118 @@
+{
+  "//": "PPL0",
+  "scenario_0":
+  [
+    {
+      "grp_id": 0,
+      "grp_info":
+      {
+        "sram_bin_path":"/opt/data/dsp/sram.bin",
+        "itcm_bin_path":"/opt/data/dsp/itcm.bin"
+      }
+    }
+  ],
+  "//": "PPL1",
+  "scenario_1":
+  [
+    {
+      "grp_id": 0,
+      "grp_info":
+      {
+        "sram_bin_path":"/opt/data/dsp/sram.bin",
+        "itcm_bin_path":"/opt/data/dsp/itcm.bin"
+      }
+    }
+  ],
+  "//": "PPL2",
+  "scenario_2":
+  [
+    {
+      "grp_id": 0,
+      "grp_info":
+      {
+        "sram_bin_path":"/opt/data/dsp/sram.bin",
+        "itcm_bin_path":"/opt/data/dsp/itcm.bin"
+      }
+    }
+  ],
+  "//": "PPL3",
+  "scenario_3":
+  [
+    {
+      "grp_id": 0,
+      "grp_info":
+      {
+        "sram_bin_path":"/opt/data/dsp/sram.bin",
+        "itcm_bin_path":"/opt/data/dsp/itcm.bin"
+      }
+    },
+    {
+      "grp_id": 1,
+      "grp_info":
+      {
+        "sram_bin_path":"/opt/data/dsp/sram.bin",
+        "itcm_bin_path":"/opt/data/dsp/itcm.bin"
+      }
+    }
+  ],
+  "//": "PPL4",
+  "scenario_4":
+  [
+    {
+      "grp_id": 0,
+      "grp_info":
+      {
+        "sram_bin_path":"/opt/data/dsp/sram.bin",
+        "itcm_bin_path":"/opt/data/dsp/itcm.bin"
+      }
+    },
+    {
+      "grp_id": 1,
+      "grp_info":
+      {
+        "sram_bin_path":"/opt/data/dsp/sram.bin",
+        "itcm_bin_path":"/opt/data/dsp/itcm.bin"
+      }
+    }
+  ],
+  "//": "PPL5",
+  "scenario_5":
+  [
+    {
+      "grp_id": 0,
+      "grp_info":
+      {
+        "sram_bin_path":"/opt/data/dsp/sram.bin",
+        "itcm_bin_path":"/opt/data/dsp/itcm.bin"
+      }
+    },
+    {
+      "grp_id": 1,
+      "grp_info":
+      {
+        "sram_bin_path":"/opt/data/dsp/sram.bin",
+        "itcm_bin_path":"/opt/data/dsp/itcm.bin"
+      }
+    }
+  ],
+  "//": "PPL6",
+  "scenario_6":
+  [
+    {
+      "grp_id": 0,
+      "grp_info":
+      {
+        "sram_bin_path":"/opt/data/dsp/sram.bin",
+        "itcm_bin_path":"/opt/data/dsp/itcm.bin"
+      }
+    },
+    {
+      "grp_id": 1,
+      "grp_info":
+      {
+        "sram_bin_path":"/opt/data/dsp/sram.bin",
+        "itcm_bin_path":"/opt/data/dsp/itcm.bin"
+      }
+    }
+  ]
+}

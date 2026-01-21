@@ -1,0 +1,446 @@
+/**************************************************************************************************
+ *
+ * Copyright (c) 2019-2024 Axera Semiconductor Co., Ltd. All Rights Reserved.
+ *
+ * This source file is the property of Axera Semiconductor Co., Ltd. and
+ * may not be copied or distributed in any isomorphic form without the prior
+ * written consent of Axera Semiconductor Co., Ltd.
+ *
+ **************************************************************************************************/
+
+#include "rtspstream.hpp"
+#include <exception>
+#include <functional>
+#include "AppLogApi.h"
+#include "SpsParser.hpp"
+#include "h264.hpp"
+#include "hevc.hpp"
+#include "make_unique.hpp"
+#if defined(__RTSP_PTS__)
+#include "ax_sys_api.h"
+#endif
+
+#define TAG "RTSP"
+
+#ifdef __RTSP_RECV_CACHE__
+#ifndef __SDK_DEBUG__
+#define MAX_DISPATCH_BUFFER_DEPTH (3)
+#else
+#define MAX_DISPATCH_BUFFER_DEPTH (5)
+#endif
+
+AX_VOID CRtspStream::DispatchThread(AX_VOID *) {
+    STREAM_RING_ELEMENT_T *ele;
+    while (1) {
+        ele = m_dispatchBuf->Peek(-1);
+
+        if (!m_dispatchThread.IsRunning()) {
+            break;
+        }
+
+        if (ele) {
+            STREAM_FRAME_T stFrame = ele->stFrame;
+
+            // AX_U64 nTick = CStreamHelper::GetTick();
+            {
+                std::lock_guard<std::mutex> lck(m_mtxObs);
+                for (auto &&m : m_lstObs) {
+                    m->OnRecvStreamData(stFrame);
+                }
+            }
+
+            // AX_U32 nElapsed = (AX_U32)(CStreamHelper::GetTick() - nTick);
+            // if (nElapsed >= m_nInterval) {
+            //     LOG_M_W(TAG, "frame %llu handle time is too long %d us", stFrame.GetSeqNum(), nElapsed);
+            // }
+
+            m_dispatchBuf->Pop();
+        }
+    }
+}
+#endif
+
+AX_BOOL CRtspStream::Init(CONST STREAM_ATTR_T &stAttr) {
+    m_stStat.Reset();
+
+    m_InitEvent.ResetEvent();
+    m_PlayEvent.ResetEvent();
+
+    RtspClientCallback cb;
+    cb.OnRecvFrame = std::bind(&CRtspStream::OnRecvFrame, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+                               std::placeholders::_4, std::placeholders::_5, std::placeholders::_6);
+    cb.OnTracksInfo = std::bind(&CRtspStream::OnTracksInfo, this, std::placeholders::_1);
+    cb.OnPreparePlay = std::bind(&CRtspStream::OnPreparePlay, this);
+    cb.OnCheckAlive = std::bind(&CRtspStream::OnCheckAlive, this, std::placeholders::_1, std::placeholders::_2);
+
+    try {
+        /* Be care of maxSchedulerGranularity, refer to BasicTaskScheduler::createNew comment */
+        m_scheduler = BasicTaskScheduler::createNew(30 /* maxSchedulerGranularity */);
+        m_env = BasicUsageEnvironment::createNew(*m_scheduler);
+        m_client = CAXRTSPClient::createNew(*m_env, stAttr.strURL.c_str(), cb, stAttr.nMaxBufSize, stAttr.nDebugLevel, "RTSPClient", 0,
+                                            stAttr.nCookie);
+        m_client->scs.streamTransportMode = (RTP_OVER_TCP == stAttr.enTransportMode) ? 1 : 0; /* 0: UDP 1: TCP */
+        m_client->scs.keepAliveInterval = stAttr.nKeepAliveInterval;
+        m_client->Start();
+
+        char szName[32];
+        sprintf(szName, "rtspEvent%d", stAttr.nCookie);
+        if (!m_EventLoopThread.Start(
+                [this](AX_VOID *) -> AX_VOID {
+                    m_cExitThread = 0;
+                    m_env->taskScheduler().doEventLoop(&m_cExitThread);
+                },
+                this, szName)) {
+            LOG_MM_E(TAG, "[%d] start %s event loop fail", stAttr.nCookie, stAttr.strURL.c_str());
+
+            /* client will be deleted by continueAfterDESCRIBE() -> shutdownStream() */
+            m_client->Stop();
+            m_client = nullptr;
+
+            m_env->reclaim();
+            m_env = nullptr;
+
+            delete m_scheduler;
+            m_scheduler = nullptr;
+
+            return AX_FALSE;
+        }
+
+        m_stAttr = stAttr;
+        m_stInfo.strURL = stAttr.strURL;
+
+        if (!m_damon) {
+            RTSP_DAMON_ATTR_T stDamon;
+            stDamon.strUrl = stAttr.strURL;
+            stDamon.nCookie = stAttr.nCookie;
+            stDamon.nKeepAliveInterval = stAttr.nKeepAliveInterval + 1; /* margin to damon wait_for to avoid missing condition */
+            stDamon.nReconnectThreshold = stAttr.nReconnectThreshold;
+            stDamon.reconnect = std::bind(&CRtspStream::ReConnect, this);
+            stDamon.statusReport = std::bind(&CRtspStream::OnConnectStatusReport, this, std::placeholders::_1);
+            m_damon.reset(CRtspDamon::CreateInstance(stDamon));
+        }
+
+        /* wait SDP is received to parse stream info in 5 second */
+        if (!m_InitEvent.WaitEvent(10000)) {
+            LOG_MM_E(TAG, "[%d] recv sdp from %s timeout +++", stAttr.nCookie, stAttr.strURL.c_str());
+            m_EventLoopThread.Stop();
+            m_cExitThread = 1;
+            m_EventLoopThread.Join();
+
+            /* client will be deleted by continueAfterDESCRIBE() -> shutdownStream() */
+            m_client->Stop();
+            m_client = nullptr;
+
+            if (m_env) {
+                m_env->reclaim();
+                m_env = nullptr;
+            }
+
+            if (m_scheduler) {
+                delete m_scheduler;
+                m_scheduler = nullptr;
+            }
+
+            LOG_MM_E(TAG, "[%d] recv sdp from %s timeout ---", stAttr.nCookie, stAttr.strURL.c_str());
+            return AX_FALSE;
+        }
+
+    } catch (std::bad_alloc &e) {
+        LOG_MM_E(TAG, "[%d] setup %s fail", stAttr.nCookie, stAttr.strURL.c_str());
+        DeInit();
+        return AX_FALSE;
+    }
+
+    return AX_TRUE;
+}
+
+AX_BOOL CRtspStream::DeInit(AX_VOID) {
+    // if (m_EventLoopThread.IsRunning()) {
+    //     LOG_M_E(TAG, "%s: %s is still running", __func__, m_stInfo.strURL.c_str());
+    //     return AX_FALSE;
+    // }
+
+    Stop();
+
+    if (m_env) {
+        m_env->reclaim();
+        m_env = nullptr;
+    }
+
+    if (m_scheduler) {
+        delete m_scheduler;
+        m_scheduler = nullptr;
+    }
+
+    return AX_TRUE;
+}
+
+AX_BOOL CRtspStream::Start(AX_VOID) {
+    LOG_M_D(TAG, "%s: %s +++", __func__, m_stAttr.strURL.c_str());
+
+    if (nullptr == m_scheduler || nullptr == m_env || nullptr == m_damon) {
+        LOG_MM_E(TAG, "RTSP stream start failed, please do initialization first.");
+        return AX_FALSE;
+    }
+
+    m_stStat.nState = 1;
+    for (auto &&m : m_stStat.nCount) {
+        m = 0;
+    }
+
+#ifdef __RTSP_RECV_CACHE__
+    m_nLastTick = 0;
+
+    m_dispatchBuf = std::move(
+        std::make_unique<CStreamRingBuffer>(m_stInfo.stVideo.nWidth * m_stInfo.stVideo.nHeight * 3 / 4, MAX_DISPATCH_BUFFER_DEPTH));
+    m_dispatchThread.Start([this](AX_VOID *pArg) -> AX_VOID { DispatchThread(pArg); }, nullptr, "RtspDispatch");
+#endif
+
+    m_PlayEvent.SetEvent();
+
+    if (!m_client->CheckPlayed(10000)) {
+        LOG_MM_E(TAG, "[%d - %s]: play fail", m_stAttr.nCookie, m_stAttr.strURL.c_str());
+
+        Stop();
+        return AX_FALSE;
+    }
+
+    if (m_damon) {
+        m_damon->Start();
+    }
+
+    LOG_M_D(TAG, "%s: %s ---", __func__, m_stAttr.strURL.c_str());
+    return AX_TRUE;
+}
+
+AX_BOOL CRtspStream::Stop(AX_VOID) {
+    LOG_M_D(TAG, "%s: %s +++", __func__, m_stAttr.strURL.c_str());
+
+    if (m_damon) {
+        m_damon->Stop();
+    }
+
+#ifdef __RTSP_RECV_CACHE__
+    m_dispatchThread.Stop();
+    if (m_dispatchBuf) {
+        m_dispatchBuf->Wakeup();
+    }
+    m_dispatchThread.Join();
+#endif
+
+    m_EventLoopThread.Stop();
+    /* if Init ok, but start is not invoked, then we need wakeup play event */
+    m_PlayEvent.SetEvent();
+    m_cExitThread = 1;
+    m_EventLoopThread.Join();
+
+    if (m_client) {
+        m_client->Stop();
+        m_client = nullptr;
+    }
+
+    m_stStat.nState = 0;
+
+    LOG_M_D(TAG, "%s: %s ---", __func__, m_stAttr.strURL.c_str());
+    return AX_TRUE;
+}
+
+void CRtspStream::OnRecvFrame(const void *session, const unsigned char *pFrame, unsigned nSize, AX_PAYLOAD_TYPE_E ePayload,
+                              STREAM_NALU_TYPE_E eNalu, struct timeval /* tv */) {
+    auto it = m_stInfo.tracks.find((AX_VOID *)session);
+    if (it == m_stInfo.tracks.end()) {
+        return;
+    }
+
+    if (PT_H264 == ePayload || PT_H265 == ePayload) {
+        ++m_stStat.nCount[0];
+
+        STREAM_FRAME_T stFrame;
+        stFrame.enPayload = ePayload;
+        stFrame.nPrivData = 0;
+        stFrame.frame.stVideo.stInfo = it->second.info.stVideo;
+        stFrame.frame.stVideo.enNalu = eNalu;
+        stFrame.frame.stVideo.pData = const_cast<AX_U8 *>(pFrame);
+        stFrame.frame.stVideo.nLen = nSize;
+        stFrame.frame.stVideo.nPTS = 0; /* let VO to make PTS for rtsp preview */
+        stFrame.frame.stVideo.bSkipDisplay = AX_FALSE;
+        stFrame.nSeqNum[0] = m_stStat.nCount[0];
+
+#ifdef __RTSP_RECV_CACHE__
+        /*
+            The interval time of two rtsp frames maybe too short(eg: < 2ms), and it will cause the ringbuf full, especially 64 clients.
+            I have no idea about the reason, so add delay if continuous frames come too frequently.
+            Fixme if someone has found the reason why rtsp sends frame too frequently.
+        */
+        AX_U64 nTick = CStreamHelper::GetTick();
+        if (m_nLastTick > 0) {
+            AX_U32 nElapsed = nTick - m_nLastTick;
+            if (nElapsed < m_nInterval) {
+                AX_U32 ms = (m_nInterval - nElapsed) / 1000;
+                if (ms >= 15) {
+                    // LOG_MM_W(TAG, "%p %lld %lld - %lld ==> sleep %d ms for nalu len %d", this, stFrame.nSeqNum[0], m_nLastTick, nTick,
+                    // ms, nSize);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+                    nTick = CStreamHelper::GetTick();
+                }
+            }
+        }
+
+        m_nLastTick = nTick;
+
+        (AX_VOID) m_dispatchBuf->Push(stFrame, nTick);
+#else
+        std::lock_guard<std::mutex> lck(m_mtxObs);
+        for (auto &&m : m_lstObs) {
+            m->OnRecvStreamData(stFrame);
+        }
+#endif
+    }
+}
+
+void CRtspStream::OnTracksInfo(const TRACKS_INFO_T &tracks) {
+    if (0 == tracks.tracks.size()) {
+        LOG_MM_E(TAG, "[%d - %s]: no tracks", m_stAttr.nCookie, m_stInfo.strURL.c_str());
+        return;
+    }
+
+    m_stInfo.tracks.clear();
+    m_stInfo.nCookie = m_stAttr.nCookie;
+
+    for (auto &&kv : tracks.tracks) {
+        switch (kv.second.enPayload) {
+            case PT_H264:
+            case PT_H265: {
+                STREAM_TRACK_INFO_T track;
+                track.enPayload = kv.second.enPayload;
+                track.info.stVideo.enPayload = track.enPayload;
+
+                SPS_INFO_T sps;
+                memset(&sps, 0, sizeof(sps));
+
+                AX_BOOL bOK;
+                if (PT_H264 == track.enPayload) {
+                    bOK = h264_parse_sps(kv.second.video.sps[0], kv.second.video.len[0], &sps);
+                } else {
+                    bOK = hevc_parse_sps(kv.second.video.sps[0], kv.second.video.len[0], &sps);
+                }
+                if (!bOK) {
+                    printf("parse sps fail:\n");
+                    printf("    url: %s\n", !tracks.url ? "nil" : (char *)tracks.url);
+                    printf("    sdp:\n%s\n", !tracks.sdp ? "nil" : (char *)tracks.sdp);
+                    for (unsigned int i = 0; i < kv.second.video.len[0]; i++) {
+                        printf("%02X ", kv.second.video.sps[0][i]);
+                        if ((i + 1) % 16 == 0) {
+                            printf("\n");
+                        }
+                    }
+                    printf("\n\n");
+                }
+
+                track.info.stVideo.nProfile = sps.profile_idc;
+                track.info.stVideo.nLevel = sps.level_idc;
+                track.info.stVideo.nWidth = sps.width;
+                track.info.stVideo.nHeight = sps.height;
+                track.info.stVideo.nFps = sps.fps;
+                track.info.stVideo.nNumRefs = sps.num_ref_frames;
+
+                m_stInfo.tracks[kv.first] = track;
+                m_stInfo.stVideo = track.info.stVideo;
+
+#ifdef __RTSP_RECV_CACHE__
+                m_nInterval = 1000000 / m_stInfo.stVideo.nFps;
+#endif
+
+                LOG_MM_N(TAG, "[%d - %s]: %s payload %d, profile %d level %d, num_ref_frames %, %dx%d %dfps", m_stAttr.nCookie, tracks.url,
+                         kv.second.control, kv.second.rtpPayload, sps.profile_idc, sps.level_idc, sps.num_ref_frames, sps.width, sps.height,
+                         sps.fps);
+            } break;
+
+            case PT_G711A:
+            case PT_G711U:
+            case PT_AAC: {
+                // m_stInfo.tracks[kv.first] = track;
+            } break;
+
+            default:
+                LOG_MM_N(TAG, "[%d - %s]: %s payload %d", m_stAttr.nCookie, tracks.url, kv.second.control, kv.second.rtpPayload);
+                break;
+        }
+    }
+
+    {
+        std::lock_guard<std::mutex> lck(m_mtxObs);
+        for (auto &&m : m_lstObs) {
+            m->OnRecvStreamInfo(m_stInfo);
+        }
+    }
+
+    m_InitEvent.SetEvent();
+}
+
+void CRtspStream::OnPreparePlay(void) {
+    m_PlayEvent.WaitEvent();
+}
+
+void CRtspStream::OnCheckAlive(int resultCode, const char *resultString) {
+    if (0 == resultCode) {
+        // LOG_M_C(TAG, "%s: resultCode = %d", __func__, resultCode);
+        if (m_damon) {
+            m_damon->KeepAlive();
+        }
+    } else {
+        if (resultString) {
+            LOG_MM_E(TAG, "[%d] resultCode = %d, %s", m_stAttr.nCookie, resultCode, resultString);
+        } else {
+            LOG_MM_E(TAG, "[%d] resultCode = %d", m_stAttr.nCookie, resultCode);
+        }
+    }
+}
+
+AX_BOOL CRtspStream::ReConnect(AX_VOID) {
+    m_EventLoopThread.Stop();
+    m_cExitThread = 1;
+    m_EventLoopThread.Join();
+
+    /* live555 taskScheduler is not thread safe, unscheduleDelayedTask after doEventLoop finished */
+    if (m_env && m_client) {
+        m_env->taskScheduler().unscheduleDelayedTask(m_client->scs.streamTimerTask);
+    }
+
+    if (m_client) {
+        m_client->Stop();
+        m_client = nullptr;
+    }
+
+    m_stStat.nState = 0;
+
+#ifdef __RTSP_RECV_CACHE__
+    m_nLastTick = 0;
+#endif
+
+    if (m_env) {
+        m_env->reclaim();
+        m_env = nullptr;
+    }
+
+    if (m_scheduler) {
+        delete m_scheduler;
+        m_scheduler = nullptr;
+    }
+
+    if (!Init(m_stAttr)) {
+        return AX_FALSE;
+    }
+
+    m_PlayEvent.SetEvent();
+    m_stStat.nState = 1;
+
+    return AX_TRUE;
+}
+
+AX_VOID CRtspStream::OnConnectStatusReport(AX_S32 nStatus) {
+    std::lock_guard<std::mutex> lck(m_mtxObs);
+    for (auto &&m : m_lstObs) {
+        m->OnNotifyConnStatus(m_stAttr.strURL.c_str(), (CONNECT_STATUS_E)nStatus);
+    }
+}

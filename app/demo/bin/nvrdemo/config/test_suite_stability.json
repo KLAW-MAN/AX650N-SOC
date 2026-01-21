@@ -1,0 +1,95 @@
+{
+    "repeat": 1,
+    "close_on_finish": 1,
+    "result_to_file": 0,
+    "result_dir": "./ts_result",
+    "module_count": 4,
+    "modules": "All acceptable module names: main, preview, playback, setting",
+    "modules": [
+      {
+        "name": "main",
+        "enable": 1,
+        "thread": 0,
+        "round_count": 1,
+        "repeat_count": 1,
+        "case_interval": 2000,
+        "cases": [
+          {
+            "name": "polling",
+            "repeat_count": 1,
+            "operation_interval": 1000
+          }
+        ]
+      },
+      {
+        "name": "preview",
+        "enable": 1,
+        "repeat_count": 1,
+        "case_interval": 2000,
+        "cases": [
+          {
+            "name": "main_sub",
+            "repeat_count": 1,
+            "operation_interval": 30000
+          },
+          {
+            "name": "split",
+            "repeat_count": 1,
+            "operation_interval": 30000
+          },
+          {
+            "name": "previous_next",
+            "repeat_count": 1,
+            "operation_interval": 10000
+          },
+          {
+            "name": "min_max",
+            "repeat_count": 1,
+            "operation_interval": 30000
+          },
+          {
+            "name": "pip",
+            "repeat_count": 1,
+            "operation_interval": 30000
+          }
+        ]
+      },
+      {
+        "name": "playback",
+        "enable": 1,
+        "repeat_count": 1,
+        "data_path": "data path must be the same as the value when it is saved, because it also saves in .ind files",
+        "data_path": "/opt/bin/NVRDemo/datastream_ts",
+        "date": "2023-06-12",
+        "case_interval": 2000,
+        "cases": [
+          {
+            "name": "split",
+            "repeat_count": 1,
+            "operation_interval": 30000
+          },
+          {
+            "name": "control",
+            "repeat_count": 1,
+            "operation_interval": 30000
+          },
+          {
+            "name": "main_sub",
+            "repeat_count": 1,
+            "operation_interval": 30000
+          },
+          {
+            "name": "min_max",
+            "repeat_count": 1,
+            "operation_interval": 30000
+          }
+        ]
+      },
+      {
+        "name": "setting",
+        "enable": 0,
+        "repeat_count": 1,
+        "case_interval": 30000
+      }
+    ]
+}

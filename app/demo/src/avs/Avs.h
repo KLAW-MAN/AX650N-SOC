@@ -1,0 +1,121 @@
+/**************************************************************************************************
+ *
+ * Copyright (c) 2019-2024 Axera Semiconductor Co., Ltd. All Rights Reserved.
+ *
+ * This source file is the property of Axera Semiconductor Co., Ltd. and
+ * may not be copied or distributed in any isomorphic form without the prior
+ * written consent of Axera Semiconductor Co., Ltd.
+ *
+ **************************************************************************************************/
+
+#pragma once
+
+#include  "AvsCfgParser.h"
+#include "ax_avscali_api.h"
+
+using namespace std;
+
+#define MAX_AVS_PIPE_NUM            (AX_AVS_PIPE_NUM)
+#define DEFAULT_AVS_CHN_OUT_WIDTH   (3840)
+#define DEFAULT_AVS_CHN_OUT_HEIGHT  (1112)
+
+typedef struct _AX_APP_AVS_ATTR_T {
+    AX_U8 u8PipeNum;
+    AX_AVS_MODE_E enMode;
+    AX_AVS_ENGINE_MODE_E eEngineMode;
+    AX_AVS_BLEND_MODE_E enBlendMode;
+    AX_APP_AVS_PARAM_TYPE_E enParamType;
+    AX_AVS_PROJECTION_MODE_E eProjectionMode;
+    AX_BOOL bSyncPipe;
+    AX_BOOL bDynamicSeam;
+    AX_FRAME_COMPRESS_INFO_T stAvsCompress;
+    AX_U8 u8CaliEnable;
+    string strCaliServerIP;
+    AX_U16 u16CaliServerPort;
+    AX_BOOL bAroundView;
+    AX_BOOL bPrioOnsiteCali;
+
+    AX_AVSCALI_INIT_PARAM_T tCaliInitParam;
+
+    _AX_APP_AVS_ATTR_T() {
+        memset((AX_VOID *)&tCaliInitParam, 0, sizeof(AX_AVSCALI_INIT_PARAM_T));
+
+        u8PipeNum = 2;
+        enMode = AVS_MODE_BLEND;
+        eEngineMode = AVS_ENGINE_GDC;
+        enBlendMode = AVS_BLEND_ALPHA;
+        enParamType = E_AVS_PARAM_TYPE_NORMAL;
+        eProjectionMode = AVS_PROJECTION_RECTLINEAR;
+        bSyncPipe = AX_TRUE;
+        bDynamicSeam = AX_TRUE;
+        stAvsCompress.enCompressMode = AX_COMPRESS_MODE_LOSSY;
+        stAvsCompress.u32CompressLevel = 4;
+        u8CaliEnable = 0;
+        strCaliServerIP = "";
+        u16CaliServerPort = 9999;
+        bAroundView = AX_FALSE;
+        bPrioOnsiteCali = AX_TRUE;
+        tCaliInitParam.tPipeInfo.stPipeSeqInfo.nPipeNum = u8PipeNum;
+        tCaliInitParam.tPipeInfo.nChn = 0;
+        tCaliInitParam.tPipeInfo.nImgWidth = 2688;
+        tCaliInitParam.tPipeInfo.nImgHeight = 1520;
+        tCaliInitParam.tCallbacks.GeoCaliDoneCb = nullptr;
+        tCaliInitParam.pPrivData = nullptr;
+    }
+} AX_APP_AVS_ATTR_T, *AX_APP_AVS_ATTR_PTR;
+
+typedef struct _AVS_MEM_ADDR_T {
+    AX_U64   u64PhyAddr;
+    AX_VOID* pVirAddr;
+} AX_APP_AVS_MEM_ADDR_T;
+
+typedef struct _AVS_RESOLUTION_T {
+    AX_U32 u32Width;
+    AX_U32 u32Height;
+} AX_APP_AVS_RESOLUTION_T;
+
+typedef struct _AVS_AEAWB_SYNC_RATIO_T
+{
+    AX_ISP_IQ_AE_SYNC_RATIO_T  tAeSyncRatio;
+    AX_ISP_IQ_AWB_SYNC_RATIO_T tAwbSyncRatio;
+} AX_AVS_AEAWB_SYNC_RATIO_T, *AX_AVS_AEAWB_SYNC_RATIO_PTR;
+
+class CAvs{
+public:
+    CAvs() = default;
+
+    AX_BOOL Init(const AX_APP_AVS_ATTR_T& stAVSAttr);
+    AX_BOOL DeInit();
+
+    AX_BOOL Start();
+    AX_BOOL Stop();
+
+    AX_BOOL LoadParam(AX_BOOL bOnlyAvsParam = AX_FALSE);
+
+    AX_BOOL StartAVSCalibrate();
+    AX_VOID StopAVSCalibrate();
+
+    AX_APP_AVS_RESOLUTION_T GetAvsResolution() {
+        return m_stAvsResolution;
+    }
+
+    AX_AVSCALI_AEAWB_SYNC_RATIO_INFO_T GetAeAwbSyncRatio() {
+        return m_tAeAwbSyncRatio;
+    }
+
+private:
+
+    AX_APP_AVS_ATTR_T m_stAvsAttr;
+    AX_AVSCALI_AVS_GRP_ATTR_T m_stAvsGrpAttr;
+    AX_AVS_CHN_ATTR_T m_stAvsChnAttr;
+    AX_APP_AVS_RESOLUTION_T m_stAvsResolution {DEFAULT_AVS_CHN_OUT_WIDTH,
+                                               DEFAULT_AVS_CHN_OUT_HEIGHT};
+    AX_AVSCALI_AEAWB_SYNC_RATIO_INFO_T m_tAeAwbSyncRatio{0};
+
+    AX_BOOL m_bIsCalibrated{AX_FALSE};
+    AX_AVS_GRP m_nGrp{0};
+    AX_AVS_CHN m_nChn{0};
+
+    string m_strCaliDataPath{""};
+    string m_SDKVersion{""};
+};

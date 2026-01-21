@@ -1,0 +1,31 @@
+diff --git a/ext_drv/pcie/mmb/ax_mmb.c b/ext_drv/pcie/mmb/ax_mmb.c
+index ec432c373..c21d0c5a3 100644
+--- a/ext_drv/pcie/mmb/ax_mmb.c
++++ b/ext_drv/pcie/mmb/ax_mmb.c
+@@ -346,7 +346,7 @@ static int ax_scatterlist_alloc(struct file *fp, struct ax_scatterlist *scatterl
+		PCIe_PRINT(PCIe_DEBUG, "size = 0x%x", alloc_size);
+
+		ax_mmb->scatterlist->sg_list[count].virtaddr = virtaddr;
+-		ax_mmb->scatterlist->sg_list[count].phyaddr = phyaddr;
++		ax_mmb->scatterlist->sg_list[count].phyaddr = phyaddr + 0x1000000000;
+		ax_mmb->scatterlist->sg_list[count].size = alloc_size;
+		size -= alloc_size;
+		count++;
+@@ -458,7 +458,7 @@ static long ax_mmb_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
+		PCIe_PRINT(PCIe_DEBUG,
+			   "ax_mmb_ioctl: get video buffer base phy addr");
+		ax_mmb = (void *)fp->private_data;
+-		dma_phy_addr = ax_mmb->dma_phy_addr;
++		dma_phy_addr = ax_mmb->dma_phy_addr + 0x1000000000;
+		if (copy_to_user
+		    ((void *)arg, (void *)&dma_phy_addr, sizeof(long))) {
+			PCIe_PRINT(PCIe_ERR, "copy data to usr space failed");
+@@ -611,7 +611,7 @@ static int ax_mmb_mmap(struct file *file, struct vm_area_struct *vma)
+
+	if (ax_mmb->isScatter) {
+		for (i = 0; i < ax_mmb->scatterlist->num; i++) {
+-			pfn_start = ax_mmb->scatterlist->sg_list[i].phyaddr >> PAGE_SHIFT;
++			pfn_start = (ax_mmb->scatterlist->sg_list[i].phyaddr - 0x1000000000) >> PAGE_SHIFT;
+			map_size = ax_mmb->scatterlist->sg_list[i].size;
+			ret = remap_pfn_range(vma, vm_start, pfn_start, map_size, vma->vm_page_prot);
+			if (ret)

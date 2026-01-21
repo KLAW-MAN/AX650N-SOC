@@ -1,0 +1,32 @@
+/**************************************************************************************************
+ *
+ * Copyright (c) 2019-2024 Axera Semiconductor Co., Ltd. All Rights Reserved.
+ *
+ * This source file is the property of Axera Semiconductor Co., Ltd. and
+ * may not be copied or distributed in any isomorphic form without the prior
+ * written consent of Axera Semiconductor Co., Ltd.
+ *
+ **************************************************************************************************/
+
+#ifndef _SAMPLE_VO_HAL_H_
+#define _SAMPLE_VO_HAL_H_
+
+
+#include "common_vo.h"
+#include "sample_ivps_hal.h"
+
+
+typedef struct _SAMPLE_INPUT_PARAM {
+    AX_U32 u32PicWidth;
+    AX_U32 u32PicHeight;
+} SAMPLE_PARAM_S;
+
+AX_S32 VoInit(SAMPLE_VO_CONFIG_S *pstVoConf, AX_U32 u32WinNum);
+AX_VOID VoDeInit(SAMPLE_VO_CONFIG_S *pstVoConf);
+AX_VOID VoReset(SAMPLE_VO_CONFIG_S *pstVoConf);
+void *VoGetFrameThread(void *arg);
+
+AX_S32 ParseVoPubAttr(AX_CHAR *pStr, SAMPLE_VO_CONFIG_S *pstVoConf);
+
+
+#endif /* _SAMPLE_VO_HAL_H_ */

@@ -1,0 +1,59 @@
+#!/bin/sh
+
+
+# Start all init scripts in /etc/init.d
+# executing them in numerical order.
+#
+
+export PATH="/bin:/sbin:/usr/bin:/usr/sbin:/opt/bin:/opt/scripts:/soc/bin:/soc/scripts:/usr/local/bin"
+export LD_LIBRARY_PATH="/usr/local/lib:/usr/lib:/opt/lib:/soc/lib"
+
+ulimit -s 2048
+ulimit -c unlimited
+echo /opt/data/core-%e-%p-%t > /proc/sys/kernel/core_pattern
+
+echo 1200000 > /sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed
+
+mkdir -p /opt/data/AXSyslog/kernel &
+mount -t pstore pstore /sys/fs/pstore &
+# mknod /dev/console c 5 1
+# mknod /dev/null c 1 3
+
+/soc/scripts/usb-acm.sh usb2 &
+chmod 755 /soc/scripts/auto_load_all_drv.sh
+/soc/scripts/auto_load_all_drv.sh
+/soc/scripts/pcie_load_drv.sh -i
+
+for i in /etc/init.d/S??* ;do
+
+     # Ignore dangling symlinks (if any).
+     [ ! -f "$i" ] && continue
+
+     case "$i" in
+	*.sh)
+	    # Source shell script for speed.
+	    (
+		trap - INT QUIT TSTP
+		set start
+		. $i
+	    )
+	    ;;
+	*)
+	    # No sh extension, so fork subprocess.
+	    $i start
+	    ;;
+    esac
+done
+#date -s "2020-08-04 01:01:01"
+export TZ=CST-08:00
+
+sysctl -w vm.dirty_ratio=10 &
+sysctl -w vm.dirty_background_ratio=5 &
+echo madvise >/sys/kernel/mm/transparent_hugepage/enabled &
+
+/etc/init.d/axsyslogd start
+/etc/init.d/axklogd start &
+/soc/scripts/interrupt_affinity.sh &
+
+echo 1 > /proc/ax_proc/npu/enable
+/opt/bin/axclSlave/slave_daemon &

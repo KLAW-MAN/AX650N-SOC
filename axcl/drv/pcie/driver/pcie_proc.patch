@@ -1,0 +1,26 @@
+diff --git a/ext_drv/pcie/include/ax_pcie_dev.h b/ext_drv/pcie/include/ax_pcie_dev.h
+index 4c1d530c..899483c6 100644
+--- a/ext_drv/pcie/include/ax_pcie_dev.h
++++ b/ext_drv/pcie/include/ax_pcie_dev.h
+@@ -128,7 +128,7 @@
+ } while (0)
+
+ #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 17, 0))
+-#define ax_pde_data(x)	PDE_DATA(x)
++#define ax_pde_data(x)	pde_data(x)
+ #else
+ #define ax_pde_data(x)	pde_data(x)
+ #endif
+diff --git a/ext_drv/pcie/net/rc-net/ax_pcie_net.c b/ext_drv/pcie/net/rc-net/ax_pcie_net.c
+index 98dc247a..c86280ac 100644
+--- a/ext_drv/pcie/net/rc-net/ax_pcie_net.c
++++ b/ext_drv/pcie/net/rc-net/ax_pcie_net.c
+@@ -1265,7 +1265,7 @@ static int __init axnet_pci_init_one(int idx)
+ #endif
+
+ #if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0))
+-	netif_napi_add(ndev, &axnet->napi, axnet_host_poll, AXNET_NAPI_WEIGHT);
++	netif_napi_add(ndev, &axnet->napi, axnet_host_poll);
+ #else
+ 	netif_napi_add(ndev, &axnet->napi, axnet_host_poll);
+ #endif

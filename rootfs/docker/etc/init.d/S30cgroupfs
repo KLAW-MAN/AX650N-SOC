@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# Set up cgroupfs mounts.
+#
+
+source /etc/profile
+
+start() {
+	printf "Mounting cgroupfs hierarchy: "
+	cgroupfs-mount
+	[ $? = 0 ] && echo "OK" || echo "FAIL"
+}
+stop() {
+	printf "Unmounting cgroupfs hierarchy: "
+	cgroupfs-umount
+	[ $? = 0 ] && echo "OK" || echo "FAIL"
+}
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+  start)
+      start
+	;;
+  stop)
+      stop
+	;;
+  restart|reload)
+      restart
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac

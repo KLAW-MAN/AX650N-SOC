@@ -1,0 +1,13 @@
+prefix=/usr/local/qt-5.15.7
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+
+Name: Qt5 QmlModels
+Description: Qt QmlModels module
+Version: 5.15.7
+Libs: -L${libdir} -lQt5QmlModels 
+Cflags: -DQT_QMLMODELS_LIB -I${includedir}/QtQmlModels -I${includedir}
+Requires: Qt5Core Qt5Qml
+

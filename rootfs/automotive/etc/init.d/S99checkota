@@ -1,0 +1,66 @@
+#!/bin/sh
+
+function get_env() {
+	fw_printenv | grep ${1}= | awk -F = '{ print $2 }'
+}
+
+function ota_check() {
+	echo "Start OTA check..."
+	# Todo: run check
+	echo "End OTA check"
+}
+
+start() {
+	bootlimit=`get_env "bootlimit"`
+	ota_state=`get_env "ustate"`
+
+	echo "Starting ota check"
+
+	if [ "$ota_state" = "3" ]; then
+		echo "OTA failed!"
+		fw_setenv bootcount 0
+		fw_setenv upgrade_available 0
+		fw_setenv ustate 0
+		echo "Exit OTA!"
+	elif [ "$ota_state" = "1" ]; then
+		ota_check
+		if [ "$?" = "0" ]; then
+			echo "OTA successful!"
+			fw_setenv bootcount 0
+			fw_setenv upgrade_available 0
+			fw_setenv ustate 0
+		else
+			# Upgrade package error, restart to uboot switch slot
+			fw_setenv bootcount ${bootlimit}
+			echo "reboot"
+			reboot
+		fi
+	fi
+	printf "Starting swupdate: "
+	start-stop-daemon -S -q -m -b -p /var/run/swupdate.pid \
+			-x /opt/swupdate/swupdate.sh
+	[ $? = 0 ] && echo "OK" || echo "FAIL"
+}
+
+stop() {
+	printf "Stopping swupdate: "
+	start-stop-daemon -K -q -p /var/run/swupdate.pid && start-stop-daemon -K -q -n swupdate
+	[ $? = 0 ] && echo "OK" || echo "FAIL"
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart|reload)
+		stop
+		start
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+esac
+exit $?

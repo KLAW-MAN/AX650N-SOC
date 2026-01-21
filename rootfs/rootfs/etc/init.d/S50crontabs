@@ -1,0 +1,36 @@
+#!/bin/sh
+mkdir -p /var/spool/cron/crontabs
+chmod -R 0644 /etc/cron.d
+chmod -R 0644 /etc/logrotate.d
+crontab_add(){
+cron_path="$1"
+cat > /etc/cron.d/$cron_path<<EOF
+*/50 * * * * /usr/sbin/logrotate /etc/cron.d/logrotate.conf
+* * * * * /usr/sbin/ntpd -n -q -p cn.ntp.org.cn
+* * * * * /sbin/hwclock -w -f /dev/rtc0
+EOF
+}
+
+check_crontab(){
+     app_name="$1"
+     if [ ! -f  /etc/cron.d/$app_name ]
+      then
+          crontab_add  "$1"
+     else
+          echo "File already exists"
+    fi
+}
+
+if [  "$1" == "" ]
+then
+    echo -e "\033[41;37m no parameter $1\033[0m"
+    exit 1
+else
+    check_crontab "$1"
+    echo -e "\033[32m crontab already write $1\033[0m"
+fi
+
+echo -e "\033[32m crontab /etc/cron.d/$1\033[0m"
+crontab /etc/cron.d/$1
+crond
+exit 1

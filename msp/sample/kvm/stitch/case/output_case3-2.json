@@ -1,0 +1,30 @@
+{
+	"partition0":	{
+		"ori_crop_start":	0,
+		"ori_crop_length":	362,
+		"output_length":	720,
+		"output_crop_on_left":	0,
+		"output_crop_on_right":	0,
+		"output_right_end":	359,
+		"scale":	0.5
+	},
+	"partition1":	{
+		"ori_crop_start":	358,
+		"ori_crop_length":	364,
+		"output_length":	724,
+		"output_crop_on_left":	4,
+		"output_crop_on_right":	0,
+		"output_right_end":	719,
+		"scale":	0.5
+	},
+	"partition2":	{
+		"ori_crop_start":	718,
+		"ori_crop_length":	364,
+		"output_length":	724,
+		"output_crop_on_left":	4,
+		"output_crop_on_right":	0,
+		"output_right_end":	1079,
+		"scale":	0.5
+	},
+	"ori_pad_num_end":	2
+}

@@ -1,0 +1,9 @@
+{
+    "source_total_width": 1080,
+    "disp_width_par0": 720,
+    "disp_width_par1": 720,
+    "disp_width_par2": 720,
+    "width_align": 2,
+    "partition_num": 3,
+    "scl_reg_f_bits": 10
+}

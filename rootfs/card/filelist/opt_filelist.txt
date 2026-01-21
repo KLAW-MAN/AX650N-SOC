@@ -1,0 +1,25 @@
+@dir: msp/out
+bin/axclSlave/* bin/axclSlave/
+
+@dir: msp/out
+lib/libax_cipher.so
+lib/libax_dmadim.so
+lib/libax_dmaxor.so
+lib/libax_dsp_cv.so
+lib/libax_dsp.so
+lib/libax_efuse.so
+lib/libax_engine.so
+lib/libax_interpreter.so
+lib/libax_ive.so
+lib/libax_ivps.so
+lib/libax_kvm_dsp_cv.so
+lib/libax_pcie_dma.so
+lib/libax_pcie_msg.so
+lib/libax_sys.so
+lib/libax_utility.so
+lib/libax_vdec.so
+lib/libax_venc.so
+lib/libax_comm.so
+lib/libax_pkg.so
+lib/libaxclrt_worker.so
+lib/libax_logger.so

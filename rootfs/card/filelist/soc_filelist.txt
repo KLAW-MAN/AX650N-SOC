@@ -1,0 +1,31 @@
+@dir:rootfs
+rootfs/opt/scripts/* scripts/
+card/rootfs/soc/scripts/* scripts/
+
+@dir:kernel/osdrv/out/
+ko/ax_base.ko
+ko/ax_cmm.ko
+ko/ax_gdc.ko
+ko/ax_vdsp.ko
+ko/ax_ivps.ko
+ko/ax_ive.ko
+ko/ax_jdec.ko
+ko/ax_jenc.ko
+ko/ax_vdec.ko
+ko/ax_tdp.ko
+ko/ax_venc.ko
+ko/ax_vgp.ko
+ko/ax_vpp.ko
+ko/axcl_slave.ko
+ko/pcie-ax-ep.ko
+ko/ax_mailbox.ko
+ko/ax_npu.ko
+ko/ax_pcie_dma_slave.ko
+ko/ax_pcie_slave_dev.ko
+ko/ax_pcie_p2p_ep.ko
+ko/ax_pcie_ep_net2.ko
+ko/ax_pcie_mmb.ko
+ko/ax_pcie_msg.ko
+ko/ax_perf_monitor.ko
+ko/ax_pool.ko
+ko/ax_sys.ko

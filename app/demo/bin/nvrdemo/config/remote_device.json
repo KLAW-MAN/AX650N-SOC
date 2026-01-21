@@ -1,0 +1,1349 @@
+{
+    "count": 2,
+    "remote_device":[
+        {
+            "channel": 0,
+            "alias": "remote device",
+            "type": 0,
+            "preview": {
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 1,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 2,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 3,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 4,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 5,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 6,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 7,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 8,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 9,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 10,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 11,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 12,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 13,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 14,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 15,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 16,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 17,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 18,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 19,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 20,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 21,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 22,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 23,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 24,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 25,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 26,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 27,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 28,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 29,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 30,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 31,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 32,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 33,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 34,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 35,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 36,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 37,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 38,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 39,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 40,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 41,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 42,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 43,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 44,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 45,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 46,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 47,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 48,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 49,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 50,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 51,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 52,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 53,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 54,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 55,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 56,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 57,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 58,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 59,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 60,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 61,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 62,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        },
+        {
+            "channel": 63,
+            "alias": "remote device",
+            "type": 0,
+            "preview":{
+                "stream":0,
+                "display":1
+            },
+            "patrol":{
+                "stream":0,
+                "display":1
+            },
+            "main": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_1920x1080_25fps_2000kbps.264"
+            },
+            "sub1": {
+                "record": 0,
+                "rtsp": "rtsp://192.168.2.8:8554/road3_720x576_25fps_640kbps.264"
+            }
+        }
+    ]
+}

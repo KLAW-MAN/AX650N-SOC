@@ -1,0 +1,12 @@
+#!/bin/sh
+SLAVE_IMAGE_PATH=/opt/slave
+cd /opt/slave
+sample_pcie_boot  $SLAVE_IMAGE_PATH/u-boot.bin   0x14001000
+sample_pcie_boot -d -zip device_id=0x01 -b 0x100000000 0x20000000
+sync
+sample_pcie_boot  $SLAVE_IMAGE_PATH/AX650_slave.dtb     0x110080000
+sample_pcie_boot  $SLAVE_IMAGE_PATH/atf_bl31.img        0x11ff10000
+sample_pcie_boot  $SLAVE_IMAGE_PATH/Image               0x100200000
+sample_pcie_boot  $SLAVE_IMAGE_PATH/rootfs.ext4         0x120000000
+sample_pcie_boot  start
+

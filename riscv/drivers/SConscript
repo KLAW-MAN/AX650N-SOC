@@ -1,0 +1,18 @@
+Import('RTT_ROOT')
+Import('rtconfig')
+from building import *
+
+cwd     = GetCurrentDir()
+
+# add the general drivers.
+src     = Glob('gpio/*.c') + Glob('utils/*.c') + Glob('i2c/*.c') + Glob('libc/syscalls.c') + Glob('timer64/*.c') \
+        + Glob('mailbox/*.c') + Glob('uart/*.c') + Glob('ax_hwspinlock/*.c') + Glob('log/*.c') + Glob('pinmux/*.c')
+
+if GetDepend('DFS_USING_POSIX'):
+    src += ['libc/dfs_posix.c']
+
+CPPPATH = ['gpio', 'utils', 'mailbox', 'uart', 'i2c', 'ax_hwspinlock', 'timer64', 'log']
+
+group   = DefineGroup('Drivers', src, depend = [''], CPPPATH = CPPPATH)
+
+Return('group')

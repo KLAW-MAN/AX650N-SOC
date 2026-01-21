@@ -1,0 +1,2829 @@
+{
+    "//": "default",
+    "scenario_0":
+    [
+        {
+            "src_mod": "VIN",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 2,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 3,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "CAPTURE",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 4,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 5,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 5,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 1,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 2,
+            "dst_mod": "IVPS",
+            "dst_grp": 6,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 6,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 7,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 2,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 6,
+            "src_chn": 2,
+            "dst_mod": "IVPS",
+            "dst_grp": 8,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 8,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 3,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 3,
+            "dst_mod": "IVES",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        }
+    ],
+    "//": "8M_4M+4M",
+    "scenario_1":
+    [
+        {
+            "src_mod": "VIN",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 2,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 3,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "CAPTURE",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 4,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 5,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 5,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 1,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 2,
+            "dst_mod": "IVPS",
+            "dst_grp": 6,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 6,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 7,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 2,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 6,
+            "src_chn": 2,
+            "dst_mod": "IVPS",
+            "dst_grp": 8,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 8,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 3,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 3,
+            "dst_mod": "IVES",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "AVS",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "AVS",
+            "dst_grp": 0,
+            "dst_chn": 1,
+            "link": 1
+        },
+        {
+            "src_mod": "AVS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 9,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 9,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 10,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 10,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 11,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 4,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "CAPTURE",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "AVS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 12,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 12,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 13,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 13,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 5,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 12,
+            "src_chn": 2,
+            "dst_mod": "IVPS",
+            "dst_grp": 14,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 14,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 15,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 6,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 14,
+            "src_chn": 2,
+            "dst_mod": "IVPS",
+            "dst_grp": 16,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 16,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 7,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 12,
+            "src_chn": 3,
+            "dst_mod": "IVES",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 0
+        }
+    ],
+    "//": "default",
+    "scenario_2":
+    [
+        {
+            "src_mod": "VIN",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 2,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 3,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "CAPTURE",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 4,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 5,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 5,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 1,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 2,
+            "dst_mod": "IVPS",
+            "dst_grp": 6,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 6,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 7,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 2,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 6,
+            "src_chn": 2,
+            "dst_mod": "IVPS",
+            "dst_grp": 8,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 8,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 3,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 3,
+            "dst_mod": "IVES",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        }
+    ],
+    "//": "quad-sensor for 4K/4M",
+    "scenario_3":
+    [
+        {
+            "src_mod": "VIN",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 2,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 3,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 1,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 2,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 3,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 4,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 5,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 5,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 6,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 6,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 4,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 7,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 5,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 6,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 7,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 8,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 8,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 9,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 9,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 2,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 10,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 10,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 8,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 8,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 11,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 9,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 2,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 10,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 11,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 6,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 12,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 12,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 13,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 13,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 3,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 14,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 14,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 12,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 12,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 15,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 13,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 3,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 14,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 15,
+            "link": 1
+        }
+    ],
+    "//": "eight-sensor",
+    "scenario_4":
+    [
+        {
+            "src_mod": "VIN",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 2,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 3,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 1,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 2,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 3,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 4,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 5,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 5,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 6,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 6,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 4,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 7,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 5,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 6,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 7,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 8,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 8,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 9,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 9,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 2,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 10,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 10,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 8,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 8,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 11,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 9,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 2,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 10,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 11,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 12,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 12,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 13,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 13,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 3,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 14,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 14,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 12,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 12,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 15,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 13,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 3,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 14,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 15,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 16,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 16,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 17,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 17,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 4,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 18,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 18,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 16,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 16,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 19,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 19,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 17,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 19,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 4,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 19,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 18,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 19,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 19,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 5,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 20,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 20,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 21,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 21,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 5,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 5,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 22,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 22,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 20,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 5,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 20,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 23,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 23,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 21,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 23,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 5,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 23,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 22,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 23,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 23,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 6,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 24,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 24,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 25,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 25,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 6,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 6,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 26,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 26,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 24,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 6,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 24,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 27,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 27,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 25,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 27,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 6,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 27,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 26,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 27,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 27,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 7,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 28,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 28,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 29,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 29,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 7,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 7,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 30,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 30,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 28,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 7,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 28,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 31,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 31,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 29,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 31,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 7,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 31,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 30,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 31,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 31,
+            "link": 1
+        }
+    ],
+    "//": "six-sensor",
+    "scenario_5":
+    [
+        {
+            "src_mod": "VIN",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 2,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 3,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 1,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 2,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 3,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 4,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 5,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 5,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 6,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 6,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 4,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 7,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 5,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 6,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 7,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 8,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 8,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 9,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 9,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 2,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 10,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 10,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 8,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 8,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 11,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 9,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 2,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 10,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 11,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 12,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 12,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 13,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 13,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 3,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 14,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 14,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 12,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 12,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 15,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 13,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 3,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 14,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 15,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 16,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 16,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 17,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 17,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 4,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 18,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 18,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 16,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 16,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 19,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 19,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 17,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 19,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 4,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 19,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 18,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 19,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 19,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 5,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 20,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 20,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 21,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 21,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 5,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 5,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 22,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 22,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 20,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 5,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 20,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 23,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 23,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 21,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 23,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 5,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 23,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 22,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 23,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 23,
+            "link": 1
+        }
+    ],
+    "//": "quad-sensor for 5M",
+    "scenario_6":
+    [
+        {
+            "src_mod": "VIN",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 2,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 0,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 3,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 1,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 2,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 3,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 3,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 4,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 5,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 5,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 6,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 6,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 4,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 1,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 7,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 5,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 1,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 6,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 7,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 7,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 4,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 8,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 8,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 9,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 9,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 2,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 10,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 10,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 8,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 2,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 8,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 11,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 9,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 2,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 10,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 11,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 11,
+            "link": 1
+        },
+        {
+            "src_mod": "VIN",
+            "src_grp": 6,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 12,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 12,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 13,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 13,
+            "src_chn": 0,
+            "dst_mod": "COLLECT",
+            "dst_grp": 3,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 14,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 14,
+            "src_chn": 0,
+            "dst_mod": "JENC",
+            "dst_grp": 0,
+            "dst_chn": 12,
+            "link": 1
+        },
+        {
+            "src_mod": "COLLECT",
+            "src_grp": 3,
+            "src_chn": 0,
+            "dst_mod": "DETECT",
+            "dst_grp": 0,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 12,
+            "src_chn": 0,
+            "dst_mod": "IVPS",
+            "dst_grp": 15,
+            "dst_chn": 0,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 0,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 13,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 1,
+            "dst_mod": "IVES",
+            "dst_grp": 3,
+            "dst_chn": 0,
+            "link": 0
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 2,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 14,
+            "link": 1
+        },
+        {
+            "src_mod": "IVPS",
+            "src_grp": 15,
+            "src_chn": 3,
+            "dst_mod": "VENC",
+            "dst_grp": 0,
+            "dst_chn": 15,
+            "link": 1
+        }
+    ]
+}
