@@ -1,0 +1,28 @@
+1. ax650 <--> ax650
+1) slave
+pcie_net.sh slave
+
+2) host
+pcie_net.sh master
+
+
+2. ax650 <--> x86
+1) ax650 slave
+pcie_net.sh slave
+
+2) x86 host
+Compile driver
+Copy kernel/osdrv/ext_drv/pcie-net in sdk to x86
+cd /home/pcie/pcie-net/
+cp Makefile_x86 Makefile
+make
+make install
+
+Uninstall the pcie boot driver (if any)
+rmmod ax_pcie_boot
+rmmod ax_pcie_host_dev
+
+Load virtual network card
+./pcie_net_x86.sh
+
+Execute ifconfig to check whether there is an ax-net0 interface

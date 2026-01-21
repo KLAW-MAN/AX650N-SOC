@@ -1,0 +1,21 @@
+if TARGET_AX650_SSD
+
+config SYS_BOARD
+	default "ax650_ssd"
+
+config SYS_VENDOR
+	default "axera"
+
+config SYS_CONFIG_NAME
+	default "ax650_ssd"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+config BOOT_OPTIMIZATION
+	def_bool y
+	help
+	  Enable boot optimization.
+	  1. New Image and dtb image format.
+
+endif

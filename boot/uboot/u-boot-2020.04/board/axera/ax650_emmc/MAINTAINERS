@@ -1,0 +1,5 @@
+AX650_EMMC
+S:      Maintained
+F:      board/axera/ax650_emmc
+F:      include/configs/ax650_emmc.h
+F:      configs/AX650_emmc_defconfig

@@ -1,0 +1,74 @@
+/*
+ * (C) Copyright 2020 AXERA Co., Ltd
+ *
+ * SPDX-License-Identifier:     GPL-2.0+
+ */
+
+/dts-v1/;
+#include <dt-bindings/pwm/pwm.h>
+#include "ax650.dtsi"
+
+/ {
+	model = "AXERA AX650_emmc Board";
+	compatible = "AXERA,AX650", "axera,ax650";
+
+	chosen {
+		stdout-path = &uart0;
+	};
+
+	emmc: mmc@28000000 {
+		compatible = "axera,ax650-sdhc";
+		reg = <0x0 0x28000000 0x0 0x1000>;
+		interrupts = <0 93 4>;
+		bus-width = <8>;
+		//sdhci-caps-mask = <0x0 0x03000000>; //support 3.3V to configure
+		non-removable;
+		axera,phy-cnfg = <0x00CC0000>;
+		axera,phy-cmdpad-cnfg = <0x0449>;
+		axera,phy-datapad-cnfg = <0x0449>;
+		axera,phy-clkpad-cnfg = <0x0440>;
+		axera,phy-stbpad-cnfg = <0x0451>;
+		axera,phy-rstnpad-cnfg = <0x0449>;
+		axera,phy-commdl-cnfg = <0x0>;
+		axera,phy-sdclkdl-cnfg = <0x0>;
+		axera,phy-sdclkdl-dc = <0x7f>;
+		axera,phy-smpldl-cnfg = <0x8>;
+		axera,phy-atdl-cnfg = <0xC>;
+		status = "okay";
+	};
+
+	sd: mmc@30E00000 {
+		compatible = "axera,ax650-sdhc";
+		reg = <0x0 0x30E00000 0x0 0x1000>;
+		interrupts = <0 177 4>;
+		bus-width = <4>;
+		no-1-8-v;
+		axera,phy-cnfg = <0x00CD0000>;
+		axera,phy-cmdpad-cnfg = <0x044A>;
+		axera,phy-datapad-cnfg = <0x044A>;
+		axera,phy-clkpad-cnfg = <0x0440>;
+		axera,phy-stbpad-cnfg = <0x0452>;
+		axera,phy-rstnpad-cnfg = <0x0440>;
+		axera,phy-commdl-cnfg = <0x0>;
+		axera,phy-sdclkdl-cnfg = <0x0>;
+		axera,phy-sdclkdl-dc = <0x7f>;
+		axera,phy-smpldl-cnfg = <0x8>;
+		axera,phy-atdl-cnfg = <0xC>;
+		status = "okay";
+	};
+
+	eth0: ethernet@0x10140000 {
+		compatible = "axera,ax650-eqos";
+		status = "okay";
+	};
+
+	eth1: ethernet@0x30800000{
+		compatible = "axera,ax650-eqos";
+		status = "okay";
+	};
+
+	pcie0_ep: pcie_ep@0 {
+		compatible = "axera,axera-pcie-ep";
+		status = "okay";
+	};
+};

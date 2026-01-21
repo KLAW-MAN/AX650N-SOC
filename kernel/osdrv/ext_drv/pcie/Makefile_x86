@@ -1,0 +1,53 @@
+ARCH ?= x86
+CROSS_COMPILE ?=
+PCIE_KERNEL_PATH ?= /lib/modules/$(shell uname -r)/build
+GCC=$(CROSS_COMPILE)gcc
+
+SUBDIRS := sample/boot sample/dma sample/msg sample/p2p tools/pcieTF
+INC := ./include
+VPATH +=$(PCIE_KERNEL_PATH)/fs/proc/
+
+ccflags-y  += $(patsubst %,-I%,$(subst :, ,$(VPATH))) -I$(INC)
+KCFLAGS	+=-DIS_THIRD_PARTY_PLATFORM
+
+.PHONY : clean
+
+# compile host ko
+    obj-m := ax_pcie_host_dev.o
+    obj-m += ax_pcie_boot.o
+    obj-m += ax_pcie_msg.o
+    obj-m += ax_pcie_mmb.o
+    obj-m += ax_pcie_net2.o
+    obj-m += ax_pcie_p2p_rc.o
+    ax_pcie_host_dev-objs := host_dev/ax_pcie_dev_host.o common/ax_pcie_opt.o common/ax_pcie_proc.o common/ax_pcie_msg_transfer.o
+    ax_pcie_boot-objs     := boot/ax_pcie_boot_usrdev.o
+    ax_pcie_msg-objs      := msg/ax_pcie_msg_usrdev.o
+    ax_pcie_mmb-objs      := mmb/ax_mmb.o
+    ax_pcie_net2-objs     := net/rc-net/ax_pcie_net.o
+    ax_pcie_p2p-objs      := p2p_rc/ax_pcie_p2p.o
+
+all:
+	@mkdir -p ./out
+	@mkdir -p ./out/ko
+	@mkdir -p ./out/sample
+	@mkdir -p ./out/tools
+	make -C $(PCIE_KERNEL_PATH) M=$(shell pwd) KCFLAGS=$(KCFLAGS) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
+	for dir in $(SUBDIRS);\
+	do make CC=$(GCC) -C $$dir;\
+	done
+	@rm -f *.mod *.mod.o *.o *mod *mod.c
+
+install:
+	@mv ./*.ko out/ko
+	@mv sample/boot/sample_pcie_boot out/sample
+	@mv sample/dma/sample_pcie_dma_host out/sample
+	@mv sample/msg/sample_pcie_msg_host out/sample
+	@mv sample/msg/sample_pcie_p2p_host out/sample
+	@mv tools/pcieTF/pcie_transfer_host out/tools
+
+clean:
+	make -C $(PCIE_KERNEL_PATH) M=$(shell pwd) clean
+	for dir in $(SUBDIRS);\
+	do make -C $$dir clean;\
+	done
+	rm -rf ./out

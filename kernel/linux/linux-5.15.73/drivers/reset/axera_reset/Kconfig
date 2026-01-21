@@ -1,0 +1,6 @@
+config AXERA_RESET_AX650
+	tristate "AX650 Reset Driver"
+	depends on HAS_IOMEM
+	select MFD_SYSCON
+	help
+	  Build the AX650  reset driver.

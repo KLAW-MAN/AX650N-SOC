@@ -1,0 +1,5 @@
+AX650_PIPRO_BOX
+S:      Maintained
+F:      board/axera/ax650_pipro_box
+F:      include/configs/ax650_pipro_box.h
+F:      configs/AX650_pipro_box_defconfig

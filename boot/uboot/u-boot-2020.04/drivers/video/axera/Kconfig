@@ -1,0 +1,44 @@
+menuconfig VIDEO_AXERA
+	bool "Enable AXERA Video Support"
+	depends on DM_VIDEO
+	help
+	  AXERA SoCs provide video output capabilities for High-Definition
+	  Multimedia Interface (HDMI), Low-voltage Differential Signalling
+	  (LVDS), embedded DisplayPort (eDP) and Display Serial Interface (DSI).
+
+	  This driver supports the on-chip video output device, and targets AXERA.
+
+config VIDEO_AXERA_MAX_XRES
+        int "Maximum horizontal resolution (for memory allocation purposes)"
+	depends on VIDEO_AXERA
+	default 1920
+	help
+	  The maximum horizontal resolution to support for the framebuffer.
+	  This configuration is used for reserving/allocating memory for the
+	  framebuffer during device-model binding/probing.
+
+config VIDEO_AXERA_MAX_YRES
+        int "Maximum vertical resolution (for memory allocation purposes)"
+	depends on VIDEO_AXERA
+	default 1080
+	help
+	  The maximum vertical resolution to support for the framebuffer.
+	  This configuration is used for reserving/allocating memory for the
+	  framebuffer during device-model binding/probing.
+
+if VIDEO_AXERA
+
+config DISPLAY_AXERA_HDMI
+	bool "HDMI port"
+	depends on VIDEO_AXERA
+	help
+	  This enables High-Definition Multimedia Interface display support.
+
+config DISPLAY_AXERA_MIPI
+	bool "MIPI Port"
+	depends on VIDEO_AXERA
+	help
+	  This enables Mobile Industry Processor Interface(MIPI) display
+	  support.
+
+endif

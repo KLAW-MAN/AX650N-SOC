@@ -1,0 +1,5 @@
+AX650_MASTER
+S:      Maintained
+F:      board/axera/ax650_master
+F:      include/configs/ax650_master.h
+F:      configs/AX650_master_defconfig

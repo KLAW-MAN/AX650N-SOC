@@ -1,0 +1,28 @@
+1. ax650 <--> ax650
+1) slave
+pcie_net2.sh slave
+
+2) host
+pcie_net2.sh master
+
+
+2. ax650 <--> x86
+1) ax650 slave
+pcie_net2.sh slave
+
+2) x86 host
+compile
+copy x86_pcie.tgz to x86 platform
+cd /home/pcie/x86_pcie
+make
+make install
+
+insmod msg and host dev driver
+insmod out/ko/ax_pcie_host_dev.ko
+insmod out/ko/ax_pcie_msg.ko
+
+
+./net/pcie_net2_x86.sh
+note：need run pcie_net2.sh at pcie slave
+
+run ping command.

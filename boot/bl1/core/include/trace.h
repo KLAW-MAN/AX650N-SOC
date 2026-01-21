@@ -1,0 +1,21 @@
+#ifndef _TRACE_H_
+#define _TRACE_H_
+
+#define UART0_BASE		0x2016000
+#define UART1_BASE		0x2017000
+
+#define THR_R			0x0
+
+typedef enum {
+	LOG_DDR_INIT = 0,
+	LOG_PCIE_BOOT,
+	LOG_PCIE_EP_INIT,
+	LOG_PCIE_DMA_READ,
+	LOG_PCIE_READ_FAIL,
+	LOG_PCIE_READ_SUC,
+	LOG_PCIE_LINK,
+	LOG_PRINT_MAX,
+}LOG_PRINT_ID;
+
+void log_print(LOG_PRINT_ID id);
+#endif

@@ -1,0 +1,2 @@
+### Kernel Memory Leak Detector (KMEMLEAK)
+CONFIG_DEBUG_KMEMLEAK=y

@@ -1,0 +1,22 @@
+if ARCH_AXERA
+
+config AXERA_AX650
+	bool "Support AXERA AX650"
+	select ARM64
+	help
+	  The AXERA AX630X is a ARM-based SoC with quad-core Cortex-A53.
+	  including NEON and GPU, 512KB L2 cache, two video interfaces supporting
+	  HDMI, several LPDDR4 options and video codec support. Peripherals include
+	  Gigabit Ethernet, USB2 host and OTG, SDIO, I2S, UARTs, SPI, I2C and PWMs.
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+config SYS_VENDOR
+        default "axera"
+
+config SYS_SOC
+        default "axera"
+
+source "arch/arm/mach-axera/ax650/Kconfig"
+
+endif

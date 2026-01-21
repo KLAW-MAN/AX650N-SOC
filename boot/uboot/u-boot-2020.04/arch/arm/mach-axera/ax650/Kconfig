@@ -1,0 +1,139 @@
+if ARCH_AXERA
+
+config TARGET_AX650_HAPS
+	bool "AX650_HAPS evaluation board"
+	help
+	  AX650_haps is a evaluation board for AXERA AX650,
+	  with full function and phisical connectors support like
+	  usb2.0 host ports, JTAG, MAC, SDcard, HDMI, USB-2-serial...
+
+config TARGET_AX650_EMMC
+	bool "AX650_EMMC evaluation board"
+	help
+	  AX650_emmc is a evaluation board for AXERA AX650,
+	  with full function and phisical connectors support like
+	  usb2.0 host ports, JTAG, MAC, SDcard, HDMI, USB-2-serial...
+config TARGET_AX650_SSD
+	bool "AX650_SSD evaluation board"
+	help
+	  AX650_emmc is a evaluation board for AXERA AX650,
+	  with full function and phisical connectors support like
+	  usb2.0 host ports, JTAG, MAC, SDcard, HDMI, USB-2-serial...
+config TARGET_AX650_XPILOT_6V
+	bool "AX650_XPILOT_6V board"
+	help
+	  AX650_xpilot_6v is a evaluation board for AXERA AX650,
+	  with full function and phisical connectors support like
+	  usb2.0 host ports, JTAG, MAC, SDcard, HDMI, USB-2-serial...
+config TARGET_AX650_PIPRO_BOX
+	bool "AX650_PIPRO_BOX evaluation board"
+	help
+	  AX650_emmc is a evaluation board for AXERA AX650,
+	  with full function and phisical connectors support like
+	  usb2.0 host ports, JTAG, MAC, SDcard, HDMI, USB-2-serial...
+config TARGET_AX650_SSD
+	bool "AX650_SSD evaluation board"
+	help
+	  AX650_emmc is a evaluation board for AXERA AX650,
+	  with full function and phisical connectors support like
+	  usb2.0 host ports, JTAG, MAC, SDcard, HDMI, USB-2-serial...
+config TARGET_AX650_XPILOT_6V
+	bool "AX650_XPILOT_6V board"
+	help
+	  AX650_xpilot_6v is a evaluation board for AXERA AX650,
+	  with full function and phisical connectors support like
+	  usb2.0 host ports, JTAG, MAC, SDcard, HDMI, USB-2-serial...
+config TARGET_AX650_LP
+	bool "AX650_LP evaluation board"
+	help
+	  AX650_LP is a evaluation board for AXERA AX650,
+	  with full function and phisical connectors support like
+	  usb2.0 host ports, JTAG, MAC, SDcard, HDMI, USB-2-serial...
+
+config TARGET_AX650_CARD
+	bool "AX650_CARD evaluation board"
+	help
+	  AX650_card is a evaluation board for AXERA AX650,
+	  with full function and phisical connectors support like
+	  usb2.0 host ports, JTAG, MAC, SDcard, HDMI, USB-2-serial...
+
+config TARGET_AX650_MASTER
+	bool "AX650_MASTER evaluation board"
+	help
+	  AX650_master is a evaluation board for AXERA AX650,
+	  with full function and phisical connectors support like
+	  usb2.0 host ports, JTAG, MAC, SDcard, HDMI, USB-2-serial...
+
+config TARGET_AX650_SLAVE
+	bool "AX650_SLAVE evaluation board"
+	help
+	  AX650_slave is a evaluation board for AXERA AX650,
+	  with full function and phisical connectors support like
+	  usb2.0 host ports, JTAG, MAC, SDcard, HDMI, USB-2-serial...
+
+config TARGET_AX650_NAND
+	bool "AX650_NAND evaluation board"
+	help
+	  AX650_nand is a evaluation board for AXERA AX650,
+	  with full function and phisical connectors support like
+	  usb2.0 host ports, JTAG, MAC, SDcard, HDMI, USB-2-serial...
+
+config AXERA_MEMORY_DUMP_EMMC
+	bool "axera memory dump to emmc"
+	depends on TARGET_AX650_EMMC || TARGET_AX650_MASTER
+	help
+	  save dump file to emmc
+
+config AXERA_MEMORY_DUMP_SD
+	bool "axera memory dump to sd card"
+	depends on TARGET_AX650_EMMC || TARGET_AX650_MASTER
+	help
+	  save dump file to sd card
+
+config AXERA_MEMORY_DUMP_USB_STORAGE
+	bool "axera memory dump to usb storage"
+	depends on TARGET_AX650_EMMC || TARGET_AX650_NAND
+	help
+	  save dump file to usb storage
+
+config AXERA_MEMORY_DUMP_PCIE
+	bool "axera memory dump use pcie ep"
+	depends on SLAVE_PCIE_BOOT
+	help
+	  use the pcie interface to obtain the dump file
+
+config AXERA_MEMORY_DUMP_SSD
+	bool "axera memory dump use ssd"
+	depends on TARGET_AX650_SSD
+	help
+	 use the pcie ssd save dump file
+
+config AXERA_MEMORY_FIREWALL
+	bool "axera memory firewall"
+	help
+	  use the memory firewall for memory access protect
+
+config AXERA_SUPPORT_AB_OTA
+	bool "Support A/B OTA"
+	def_bool n
+	help
+	  Support A/B OTA
+
+source "board/axera/ax650_emmc/Kconfig"
+source "board/axera/ax650_xpilot_6v/Kconfig"
+source "board/axera/ax650_nand/Kconfig"
+source "board/axera/ax650_slave/Kconfig"
+source "board/axera/ax650_master/Kconfig"
+source "board/axera/ax650_ssd/Kconfig"
+source "board/axera/ax650_pipro_box/Kconfig"
+source "board/axera/ax650_lp/Kconfig"
+source "board/axera/ax650_card/Kconfig"
+
+
+endif
+
+
+
+
+
+

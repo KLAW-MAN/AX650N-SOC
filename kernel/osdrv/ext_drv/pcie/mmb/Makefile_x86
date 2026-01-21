@@ -1,0 +1,13 @@
+KERNELDIR:=/lib/modules/$(shell uname -r)/build
+SRCS :=$(shell pwd)/..
+
+install:
+	make -C $(KERNELDIR) M=$(shell pwd) modules
+clean:
+	make -C $(KERNELDIR) M=$(shell pwd) clean
+	rm -rf ../*.o
+
+obj-m += ax_pcie_mmb.o
+ccflags-y += -I$(SRCS)
+
+ax_pcie_mmb-objs := ax_mmb.o

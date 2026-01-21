@@ -1,0 +1,262 @@
+/**************************************************************************************************
+ *
+ * Copyright (c) 2019-2024 Axera Semiconductor Co., Ltd. All Rights Reserved.
+ *
+ * This source file is the property of Axera Semiconductor Co., Ltd. and
+ * may not be copied or distributed in any isomorphic form without the prior
+ * written consent of Axera Semiconductor Co., Ltd.
+ *
+ **************************************************************************************************/
+
+#ifndef __AX_REG_VO_H
+#define __AX_REG_VO_H
+
+/* dpu register definition */
+#define DPU_VERSION			0x0
+#define DPU_INT_STA			0x4
+#define DPU_INT_RAW			0x8
+#define DPU_INT_MASK0			0xC
+#define DPU_INT_MASK1			0x10
+#define DPU_INT_CLR			0x14
+#define DPU_INT_DSP_STA			0x18
+#define DPU_INT_DSP_RAW			0x1C
+#define DPU_INT_DSP_MASK0		0x20
+#define DPU_INT_DSP_MASK1		0x24
+#define DPU_INT_DSP_CLR			0x28
+#define DPU_SOFT_CLR			0x2C
+#define DPU_TOP_CTRL			0x30
+#define DPU_DRAW_UP			0x34
+#define DPU_DRAW_EN			0x38
+#define DPU_INFO_ADDR_H			0x3C
+#define DPU_INFO_ADDR_L			0x40
+#define DPU_INFO_NUM			0x44
+#define DPU_DRAW_RESO			0x48
+#define DPU_V0_BACK_PIXEL		0x4C
+#define DPU_V0_BACK_ALPHA		0x50
+#define DPU_V0_2RGB_MATRIX_00		0x54
+#define DPU_V0_2RGB_MATRIX_01		0x58
+#define DPU_V0_2RGB_MATRIX_02		0x5C
+#define DPU_V0_2RGB_MATRIX_10		0x60
+#define DPU_V0_2RGB_MATRIX_11		0x64
+#define DPU_V0_2RGB_MATRIX_12		0x68
+#define DPU_V0_2RGB_MATRIX_20		0x6C
+#define DPU_V0_2RGB_MATRIX_21		0x70
+#define DPU_V0_2RGB_MATRIX_22		0x74
+#define DPU_V0_2RGB_OFFSET_0		0x78
+#define DPU_V0_2RGB_OFFSET_1		0x7C
+#define DPU_V0_2RGB_OFFSET_2		0x80
+#define DPU_G0_BACK_PIXEL		0x84
+#define DPU_G0_BACK_ALPHA		0x88
+#define DPU_G0_2RGB_MATRIX_00		0x8C
+#define DPU_G0_2RGB_MATRIX_01		0x90
+#define DPU_G0_2RGB_MATRIX_02		0x94
+#define DPU_G0_2RGB_MATRIX_10		0x98
+#define DPU_G0_2RGB_MATRIX_11		0x9C
+#define DPU_G0_2RGB_MATRIX_12		0xA0
+#define DPU_G0_2RGB_MATRIX_20		0xA4
+#define DPU_G0_2RGB_MATRIX_21		0xA8
+#define DPU_G0_2RGB_MATRIX_22		0xAC
+#define DPU_G0_2RGB_OFFSET_0		0xB0
+#define DPU_G0_2RGB_OFFSET_1		0xB4
+#define DPU_G0_2RGB_OFFSET_2		0xB8
+#define DPU_G_BLENDING			0xBC
+#define DPU_G_ALPHA_ADDR_H		0xC0
+#define DPU_G_ALPHA_ADDR_L		0xC4
+#define DPU_G_ALPHA_STRIDE		0xC8
+#define DPU_G0_COLOR_KEY_EN		0xCC
+#define DPU_G0_COLOR_KEY_INVERT		0xD0
+#define DPU_G0_COLOR_KEY_LOW		0xD4
+#define DPU_G0_COLOR_KEY_HIGH		0xD8
+#define DPU_DRAW_CSC0_EN		0xDC
+#define DPU_DRAW_CSC0_MATRIX_00		0xE0
+#define DPU_DRAW_CSC0_MATRIX_01		0xE4
+#define DPU_DRAW_CSC0_MATRIX_02		0xE8
+#define DPU_DRAW_CSC0_MATRIX_10		0xEC
+#define DPU_DRAW_CSC0_MATRIX_11		0xF0
+#define DPU_DRAW_CSC0_MATRIX_12		0xF4
+#define DPU_DRAW_CSC0_MATRIX_20		0xF8
+#define DPU_DRAW_CSC0_MATRIX_21		0xFC
+#define DPU_DRAW_CSC0_MATRIX_22		0x100
+#define DPU_DRAW_CSC0_OFFSET_0_0	0x104
+#define DPU_DRAW_CSC0_OFFSET_0_1	0x108
+#define DPU_DRAW_CSC0_OFFSET_0_2	0x10C
+#define DPU_DRAW_CSC0_OFFSET_1_0	0x110
+#define DPU_DRAW_CSC0_OFFSET_1_1	0x114
+#define DPU_DRAW_CSC0_OFFSET_1_2	0x118
+#define DPU_DRAW_CSC0_DECIMATION_H0	0x11C
+#define DPU_DRAW_CSC0_DECIMATION_H1	0x120
+#define DPU_DRAW_CSC0_DECIMATION_H2	0x124
+#define DPU_DRAW_CSC0_DECIMATION_H3	0x128
+#define DPU_DRAW_CSC0_DECIMATION_H4	0x12C
+#define DPU_DRAW_CSC0_DECIMATION_H5	0x130
+#define DPU_DRAW_CSC0_DECIMATION_H6	0x134
+#define DPU_DRAW_CSC0_UV_SEQ_SEL	0x138
+#define DPU_DRAW_CSC1_DECIMATION	0x13C
+#define DPU_DRAW_FORMAT			0x140
+#define DPU_DRAW_ADDR_Y_H		0x144
+#define DPU_DRAW_ADDR_Y_L		0x148
+#define DPU_DRAW_STRIDE_Y		0x14C
+#define DPU_DRAW_ADDR_C_H		0x150
+#define DPU_DRAW_ADDR_C_L		0x154
+#define DPU_DRAW_STRIDE_C		0x158
+#define DPU_DRAW_FBC_EN			0x15C
+#define DPU_DRAW_FBC_CTRL		0x160
+#define DPU_DRAW_FBC_POS		0x164
+#define DPU_DISP_UP			0x168
+#define DPU_DISP_EN			0x16C
+#define DPU_DISP_RESO			0x170
+#define DPU_READ_FORMAT			0x174
+#define DPU_DISP_ADDR_Y_H		0x178
+#define DPU_DISP_ADDR_Y_L		0x17C
+#define DPU_DISP_STRIDE_Y		0x180
+#define DPU_DISP_ADDR_C_H		0x184
+#define DPU_DISP_ADDR_C_L		0x188
+#define DPU_DISP_STRIDE_C		0x18C
+#define DPU_DISP_FBDC_EN		0x190
+#define DPU_DISP_FBDC_CTRL		0x194
+#define DPU_DISP_FBDC_POS		0x198
+#define DPU_DISP_2RGB_EN		0x19C
+#define DPU_DISP_UV_SEQ			0x1A0
+#define DPU_DISP_2RGB_MATRIX_00		0x1A4
+#define DPU_DISP_2RGB_MATRIX_01		0x1A8
+#define DPU_DISP_2RGB_MATRIX_02		0x1AC
+#define DPU_DISP_2RGB_MATRIX_10		0x1B0
+#define DPU_DISP_2RGB_MATRIX_11		0x1B4
+#define DPU_DISP_2RGB_MATRIX_12		0x1B8
+#define DPU_DISP_2RGB_MATRIX_20		0x1BC
+#define DPU_DISP_2RGB_MATRIX_21		0x1C0
+#define DPU_DISP_2RGB_MATRIX_22		0x1C4
+#define DPU_DISP_2RGB_OFFSET_0		0x1C8
+#define DPU_DISP_2RGB_OFFSET_1		0x1CC
+#define DPU_DISP_2RGB_OFFSET_2		0x1D0
+#define DPU_MOUSE_EN			0x1D4
+#define DPU_MOUSE_POS			0x1D8
+#define DPU_MOUSE_RESO			0x1DC
+#define DPU_MOUSE_FORMAT		0x1E0
+#define DPU_MOUSE_MODE			0x1E4
+#define DPU_MOUSE_ADDR_H		0x1E8
+#define DPU_MOUSE_ADDR_L		0x1EC
+#define DPU_MOUSE_STRIDE		0x1F0
+#define DPU_MOUSE_ALPHA			0x1F4
+#define DPU_MOUSE_PIXEL			0x1F8
+#define DPU_MOUSE_INV_EN		0x1FC
+#define DPU_MOUSE_INV_THR		0x200
+#define DPU_MOUSE_INV_PIXEL		0x204
+#define DPU_ADJ_SATU_EN			0x208
+#define DPU_SATURATION			0x20C
+#define DPU_LUT_EN			0x210
+#define DPU_LUT_ADDR_H			0x214
+#define DPU_LUT_ADDR_L			0x218
+#define DPU_INV_H			0x21C
+#define DPU_INV_S			0x220
+#define DPU_ADJ_BC_EN			0x224
+#define DPU_BRIGHTNESS			0x228
+#define DPU_CONTRAST			0x22C
+#define DPU_DISP_CSC0_EN		0x230
+#define DPU_DISP_CSC0_MATRIX_00		0x234
+#define DPU_DISP_CSC0_MATRIX_01		0x238
+#define DPU_DISP_CSC0_MATRIX_02		0x23C
+#define DPU_DISP_CSC0_MATRIX_10		0x240
+#define DPU_DISP_CSC0_MATRIX_11		0x244
+#define DPU_DISP_CSC0_MATRIX_12		0x248
+#define DPU_DISP_CSC0_MATRIX_20		0x24C
+#define DPU_DISP_CSC0_MATRIX_21		0x250
+#define DPU_DISP_CSC0_MATRIX_22		0x254
+#define DPU_DISP_CSC0_OFFSET_0_0	0x258
+#define DPU_DISP_CSC0_OFFSET_0_1	0x25C
+#define DPU_DISP_CSC0_OFFSET_0_2	0x260
+#define DPU_DISP_CSC0_OFFSET_1_0	0x264
+#define DPU_DISP_CSC0_OFFSET_1_1	0x268
+#define DPU_DISP_CSC0_OFFSET_1_2	0x26C
+#define DPU_DISP_CSC0_DECIMATION_H0	0x270
+#define DPU_DISP_CSC0_DECIMATION_H1	0x274
+#define DPU_DISP_CSC0_DECIMATION_H2	0x278
+#define DPU_DISP_CSC0_DECIMATION_H3	0x27C
+#define DPU_DISP_CSC0_DECIMATION_H4	0x280
+#define DPU_DISP_CSC0_DECIMATION_H5	0x284
+#define DPU_DISP_CSC0_DECIMATION_H6	0x288
+#define DPU_DISP_CSC0_UV_SEQ_SEL	0x28C
+#define DPU_CLIP_EN			0x290
+#define DPU_CLIP_GAIN0			0x294
+#define DPU_CLIP_GAIN1			0x298
+#define DPU_CLIP_GAIN2			0x29C
+#define DPU_CLIP_OFFSET_0		0x2A0
+#define DPU_CLIP_OFFSET_1		0x2A4
+#define DPU_CLIP_OFFSET_2		0x2A8
+#define DPU_CLIP_RANGE_0		0x2AC
+#define DPU_CLIP_RANGE_1		0x2B0
+#define DPU_CLIP_RANGE_2		0x2B4
+#define DPU_DITHER_EN			0x2B8
+#define DPU_DITHER_UP			0x2BC
+#define DPU_DITHER_SEED_R		0x2C0
+#define DPU_DITHER_PMASK_R		0x2C4
+#define DPU_DITHER_SEED_G		0x2C8
+#define DPU_DITHER_PMASK_G		0x2CC
+#define DPU_DITHER_SEED_B		0x2D0
+#define DPU_DITHER_PMASK_B		0x2D4
+#define DPU_DITHER_OUT_ACC		0x2D8
+#define DPU_BAD_PIXEL			0x2DC
+#define DPU_OUT_MODE			0x2E0
+#define DPU_DISP_CLK			0x2E4
+#define DPU_DISP_HSYNC			0x2E8
+#define DPU_DISP_VSYNC			0x2EC
+#define DPU_DISP_SYNC			0x2F0
+#define DPU_DISP_HHALF			0x2F4
+#define DPU_DISP_VTOTAL			0x2F8
+#define DPU_DISP_POLAR			0x2FC
+#define DPU_DISP_FORMAT			0x300
+#define DPU_BT_MODE			0x304
+#define DPU_TE_IN			0x308
+#define DPU_TE_OUT			0x30C
+#define DPU_TE_CNT			0x310
+#define DPU_AXI_EN			0x314
+#define DPU_AXI_CNT			0x318
+#define DPU_AXI_OSD			0x31C
+#define DPU_AXI_QOS			0x320
+#define DPU_DUMMY_EN			0x324
+#define DPU_DUMMY_IN			0x328
+#define DPU_DUMMY_OUT			0x32C
+#define DPU_CMD_REQ			0x330
+
+
+/*interrupt*/
+#define DPU_INT_DRAW_EOF 	BIT(0)
+#define DPU_INT_DRAW_SOF 	BIT(1)
+#define DPU_INT_DISP_EOF 	BIT(2)
+#define DPU_INT_DISP_SOF 	BIT(3)
+#define DPU_INT_AXI_WERR 	BIT(4)
+#define DPU_INT_AXI_RERR 	BIT(5)
+#define DPU_INT_DISP_UNDER 	BIT(6)
+
+/*interrupt mask0*/
+#define DPU_MASK_DRAW_EOF 	BIT(0)
+#define DPU_MASK_DRAW_SOF 	BIT(1)
+#define DPU_MASK_AXI_WERR 	BIT(2)
+/*interrupt mask1*/
+#define DPU_MASK_DISP_EOF 	BIT(0)
+#define DPU_MASK_DISP_SOF 	BIT(1)
+#define DPU_MASK_AXI_RERR 	BIT(2)
+#define DPU_MASK_DISP_UNDER 	BIT(3)
+
+#define DISP_UPDATE 0x00000001
+#define DRAW_UPDATE 0x00000001
+
+#define OFFLINE_MODE 0x00000001
+/* dpu register definition end */
+
+
+/* mm_top_core registers definition start */
+#define MM_CORE_INTR_MASK 0xD0
+#define MM_CORE_INTR_MASK_SET 0xD4
+#define MM_CORE_INTR_MASK_CLR 0xD8
+#define MM_CORE_INTR_CLR 0xDC
+#define MM_CORE_INTR_CLR_SET 0xE0
+#define MM_CORE_INTR_CLR_CLR 0xE4
+#define MM_CORE_INTR_RAW 0xE8
+#define MM_CORE_INTR_STATUS 0xEC
+
+#define MM_CORE_INT_DPU0 BIT(8)
+#define MM_CORE_INT_DPU1 BIT(9)
+/* mm_top_core registers definition end */
+
+#endif /* __AX_REG_VO_H */

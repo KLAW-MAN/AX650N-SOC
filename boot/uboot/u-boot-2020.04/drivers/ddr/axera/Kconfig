@@ -1,0 +1,8 @@
+menu "AX650 DDR controllers"
+	depends on AXERA_AX650
+
+config AX650_DRAM
+	bool "AX650 DRAM support"
+	help
+	  Select the AX650 LPDDR4X driver support on AX650 SOC.
+endmenu

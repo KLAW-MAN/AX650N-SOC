@@ -1,0 +1,6 @@
+for x86 PC:
+make --makefile=Makefile_x86
+
+for ARM:
+make p=AX650_haps
+make --makefile=Makefile_arm p=AX650_haps

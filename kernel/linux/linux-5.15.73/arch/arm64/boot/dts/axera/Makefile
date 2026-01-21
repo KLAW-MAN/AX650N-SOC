@@ -1,0 +1,14 @@
+dtb-$(CONFIG_ARCH_AXERA) += AX650_haps.dtb
+dtb-$(CONFIG_ARCH_AXERA) += AX650_zebu.dtb
+dtb-$(CONFIG_ARCH_AXERA) += AX650_emmc.dtb
+dtb-$(CONFIG_ARCH_AXERA) += AX650_xpilot_6v_alpha.dtb
+dtb-$(CONFIG_ARCH_AXERA) += AX650_xpilot_6v_beta.dtb
+dtb-$(CONFIG_ARCH_AXERA) += AX650_emmc_dual_pcie.dtb
+dtb-$(CONFIG_ARCH_AXERA) += AX650_nand.dtb
+dtb-$(CONFIG_ARCH_AXERA) += AX650_nor.dtb
+dtb-$(CONFIG_ARCH_AXERA) += AX650_slave.dtb
+dtb-$(CONFIG_ARCH_AXERA) += AX650_master.dtb
+dtb-$(CONFIG_ARCH_AXERA) += AX650_ssd.dtb
+dtb-$(CONFIG_ARCH_AXERA) += AX650_pipro_box.dtb
+dtb-$(CONFIG_ARCH_AXERA) += AX650_lp.dtb
+dtb-$(CONFIG_ARCH_AXERA) += AX650_card.dtb

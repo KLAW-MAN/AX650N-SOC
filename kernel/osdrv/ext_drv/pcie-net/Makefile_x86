@@ -1,0 +1,27 @@
+ARCH ?= x86
+CROSS_COMPILE ?=
+PCIE_KERNEL_PATH ?= /lib/modules/$(shell uname -r)/build
+
+INC := ./include
+VPATH +=$(PCIE_KERNEL_PATH)/fs/proc/
+ccflags-y  += $(patsubst %,-I%,$(subst :, ,$(VPATH))) -I$(INC)
+KCFLAGS	+=-DIS_THIRD_PARTY_PLATFORM
+
+.PHONY : clean
+
+# compile ko
+    obj-m := rc-net/ax_pcie_net.o
+    ax_pcie_rc_net-objs := ax_pcie_net.o
+
+all:
+	@mkdir -p ./out
+	@mkdir -p ./out/ko
+	make -C $(PCIE_KERNEL_PATH) M=$(shell pwd) KCFLAGS=$(KCFLAGS) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
+	@rm -f *.mod *.mod.o *.o *mod *mod.c
+
+install:
+	@mv ./rc-net/*.ko out/ko
+
+clean:
+	make -C $(PCIE_KERNEL_PATH) M=$(shell pwd) clean
+	rm -rf ./out

@@ -1,0 +1,60 @@
+config  AX_FBCDC
+	tristate "SOC FBCDC Driver"
+	help
+		This enable fbcdc driver.
+
+config  AX_DMAXOR
+	tristate "AX DMAXOR Driver"
+	help
+		This enable DMAXOR api driver.
+
+config  AX_DMADIM
+	tristate "AX DMA Driver"
+	help
+		This enable DMADIM driver.
+
+config  AX_HWINFO
+	tristate "AX HWINFO Driver"
+	help
+		This enable HWINFO driver.
+
+config  AX_BWLIMITER
+	tristate "AX BW Limiter Driver"
+	help
+		This enable BW Limiter driver.
+
+config AXERA_OS_MEM
+	tristate "axera os memory"
+	default y
+
+config  AX_MEMORY_DUMP
+	tristate "AX MEMORY DUMP"
+	select CRASH_CORE
+	default y
+	help
+		This enable  AXERA_MEMORY_DUMP.
+
+config  AX_SYS_MAP
+	tristate "AXERA_SYS_MAP"
+	default y
+	help
+		Driver for map the ddr space at the user space.
+		Map support cached type and uncached type memory map.
+
+config AX_OSAL
+	tristate "AX OSAL API"
+	default y
+	help
+	To use the axera platform, you need to enable this option to support the axera module Driver
+
+config AX_HRTIMER
+	tristate "AX HRTIMER"
+	default y
+
+config AX_DW_APB_TIMER
+	tristate "AX APB TIMER"
+ 	default m
+
+config AX_MODULE_INIT_INDEPENDENT
+	bool "Axera module init independent"
+	default y

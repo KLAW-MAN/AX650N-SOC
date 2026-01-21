@@ -1,0 +1,141 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Axera EVB Development Board
+ *
+ * Copyright (C) 2020, Axera Ltd.
+ *
+ */
+
+/dts-v1/;
+//#include "AX650.dtsi"
+
+/ {
+	compatible = "axera,ax650x";
+	interrupt-parent = <&gic>;
+	#address-cells = <2>;
+	#size-cells = <2>;
+	aliases {
+		seria0 = &ax_uart0;
+	};
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a55", "arm,armv8";
+			reg = <0x0 0x0>;
+			enable-method = "spin-table";
+			cpu-release-addr = <0x1 0x0000fff8>;
+			next-level-cache = <&L2_0>;
+			L2_0: l2-cache {
+				compatible = "cache";
+				next-level-cache = <&L3_0>;
+			};
+		};
+
+		L3_0: l3-cache0 {
+			compatible = "cache";
+		};
+	};
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupts = <0x1 0xd 0xff01 0x1 0xe 0xff01 0x1 0xb 0xff01 0x1 0xa 0xff01>;
+		clock_frequency = <1000000>;
+	};
+	gic: interrupt-controller@4900000 {
+		compatible = "arm,gic-400";
+		#interrupt-cells = <3>;
+		#address-cells = <2>;
+		#size-cells = <2>;
+		interrupt-controller;
+		reg = <0x0 0x4901000 0x0 0x1000 0x0 0x4902000 0x0 0x1000 0x0 0x4904000 0x0 0x2000 0x0 0x4906000 0x0 0x2000>;
+	};
+	soc {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		compatible = "simple-bus";
+		ranges;
+
+		sysclk: clk10000000 {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <10000000>;
+			clock-output-names = "sysclk";
+		};
+	};
+
+	memory@100000000 {
+		device_type = "memory";
+		reg = <0x1 0x00000000 0x1 0x00000000>;
+	};
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+		linux,cma {
+			compatible = "shared-dma-pool";
+			reusable;
+			size = <0x00000000 0x10000000>;
+			linux,cma-default;
+		};
+	};
+
+	chosen {
+		bootargs = "mem=2048M rdinit=/linuxrc console=ttyS0,9600n8 loglevel=5";
+	};
+
+	ax_uart0: ax_uart@2016000 {
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0x2016000 0x0 0x400>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		clocks = <&sysclk>;
+		clock-names = "baudclk";
+		interrupts = <0 135 4>;
+		status = "okay";
+	};
+
+	vdec: vdec@19000000 {
+		compatible = "axera, multi-decoder";
+		reg =   <0x0 0x19000000 0x0 0x1000>,
+                <0x0 0x19001000 0x0 0x1000>,
+                <0x0 0x19010000 0x0 0x4000>,
+				<0x0 0x19014000 0x0 0x4000>,
+                <0x0 0x19018000 0x0 0x1000>;
+		reg-names = "vdec_glb", "vdec_clk_rst", "vdec0_cfg", "vdec1_cfg", "vdec_fbc";
+		interrupts =    <0 200 4>,
+                        <0 201 4>;
+		type = "zebu";
+		// clocks = <&vdec_clk AX650X_VPU_DEC0>,
+		// 	<&vdec_clk AX650X_VPU_DEC1>,
+		// 	<&vdec_clk AX650X_VDEC_DEBUG>;
+		// clock-names = "vdec0_clk", "vdec1_clk", "vdec_debug_clk";
+        // clocks = <&sysclk>;
+		// clock-names = "baudclk";
+	};
+
+	jdec: jdec@0x10120000 {
+		compatible = "axera, jpeg-decoder";
+		reg = <0x0 0x10120000 0x0 0xFFFF>;
+		reg-names = "jdec";
+		interrupts = <0 111 4>;
+	};
+
+	jenc: jenc@0x10130000 {
+		compatible = "axera, jpeg-encoder";
+		reg = <0x0 0x10130000 0x0 0xFFFF>;
+		reg-names = "jenc";
+		interrupts = <0 110 4>;
+	};
+
+	venc: venc@0x1A000000 {
+		compatible = "axera, video-encoder";
+		reg = <0x0 0x1A000000 0x0 0x100000>;
+		reg-names = "venc";
+		interrupts = <0 204 4>,
+				<0 205 4>;
+	};
+
+};
+

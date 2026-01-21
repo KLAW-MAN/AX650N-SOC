@@ -1,0 +1,13 @@
+config COMMON_CLK_AXERA
+	bool
+	help
+	  Axera SoCs' clock support.
+
+config COMMON_CLK_AX650X
+	bool "Clock driver for Axera AX650X"
+	depends on ARCH_AXERA || COMPILE_TEST
+	select COMMON_CLK_AXERA
+	default ARCH_AXERA
+	help
+	  This driver supports Axera AX650X basic clocks.
+

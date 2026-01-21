@@ -1,0 +1,5 @@
+AX650_CARD
+S:      Maintained
+F:      board/axera/ax650_card
+F:      include/configs/ax650_card.h
+F:      configs/AX650_card_defconfig

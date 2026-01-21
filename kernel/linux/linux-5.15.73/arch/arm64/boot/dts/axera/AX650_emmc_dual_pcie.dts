@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Axera EVB Development Board
+ *
+ * Copyright (C) 2020, Axera Ltd.
+ *
+ */
+
+/dts-v1/;
+#include "AX650_emmc.dts"
+/ {
+	aliases {
+		pcie0 = &pcie0_rc;
+		pcie1 = &pcie1_rc;
+	};
+};
+
+&pcie0_rc {
+    status = "okay";
+};
+
+&pcie0_ep {
+    status = "disabled";
+};

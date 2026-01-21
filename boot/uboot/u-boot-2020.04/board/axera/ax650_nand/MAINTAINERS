@@ -1,0 +1,5 @@
+AX650_NAND
+S:      Maintained
+F:      board/axera/ax650_nand
+F:      include/configs/ax650_nand.h
+F:      configs/AX650_nand_defconfig
